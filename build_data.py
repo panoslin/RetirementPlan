@@ -5,27 +5,11 @@
 import pandas as pd
 import time
 import datetime
-
-# TODO: PV value is not identical to excel's
-pv = lambda __rate, __nper, __pmt, __pv: sum(
-    [
-        __pmt * (1 - __rate) ** term
-        for term in range(1, __nper - 1)
-    ]
-) + __pv * (1 - __rate) ** __nper
-
-fv = lambda __rate, __nper, __pmt, __pv: sum(
-    [
-        __pmt * (1 + __rate) ** term
-        for term in range(1, __nper + 1)
-    ]
-) + __pv * (1 + __rate) ** __nper
-
-
-# TODO
-def pmt(__rate, __nper, __pv=0, __fv=0) -> (int, float):
-    return 0
-
+from time_value_of_money import (
+    pv,
+    fv,
+    pmt
+)
 
 date_of_now = datetime.datetime.now()
 
@@ -85,6 +69,7 @@ expense_monthly_couple = ***REMOVED***0
 income_monthly = ***REMOVED***0
 saving = ***REMOVED***
 income_monthly_spouse = ***REMOVED***
+max_income_monthly = 100000
 
 ## RATE
 INFLATION = 0.05
