@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 # Created by panos on 2021/7/10
 # IDE: PyCharm
-import pandas as pd
-import time
-import datetime
-from time_value_of_money import (
+
+from .time_value_of_money import (
     pv,
     fv,
     pmt
 )
+import pandas as pd
+import time
+import datetime
 
 date_of_now = datetime.datetime.now()
 
