@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 # Created by panos on 2021/7/10
 # IDE: PyCharm
-
+"""
+Reference:
+https://github.com/microsoft/referencesource/blob/master/Microsoft.VisualBasic/runtime/msvbalib/Financial.vb
+"""
 
 
 def pv(__rate, __nper, __pmt=0, __fv=0, __type=0):
