@@ -145,13 +145,7 @@ class Retirement:
         growth_amount = amount * (1 + rate) ** TimeValue.nper(year)
         return growth_amount if abs(growth_amount) <= abs(maximum) else maximum
 
-    def build_data(
-            self,
-            detail=False
-    ) -> pd.DataFrame:
-        # years scale from work to death
-        time_scale = range(self.date_of_work.year, self.date_of_death.year + 1)
-
+    def build__time_frame(self, time_scale):
         df_timeframe = pd.DataFrame(
             {
                 "year": year,
@@ -167,9 +161,9 @@ class Retirement:
             }
             for year in time_scale
         )
+        return df_timeframe
 
-        # the value should base on the current year inflation
-        # TODO: escalation of food and recreation (pursuing of better life quality)
+    def build__df_expense(self, time_scale):
         df_expense = pd.DataFrame(
             {
                 "year": year,
@@ -226,8 +220,9 @@ class Retirement:
             for year in time_scale
         )
         df_expense['expense_total'] = df_expense.iloc[:, 1:].sum(axis=1)
+        return df_expense
 
-        # TODO: INCOME DF
+    def build__df_income(self, time_scale):
         df_income = pd.DataFrame(
             {
                 "year": year,
@@ -247,20 +242,9 @@ class Retirement:
             for year in time_scale
         )
         df_income['income_total'] = df_income.iloc[:, 1:].sum(axis=1)
+        return df_income
 
-        # merge df's
-        df = df_timeframe.merge(
-            df_expense if detail else df_expense[['year', 'expense_total']],
-            on='year'
-        )
-        df = df.merge(
-            df_income if detail else df_income[['year', 'income_total']],
-            on='year'
-        )
-
-        del df_timeframe, df_expense, df_income, time_scale
-
-        # calculate nursing
+    def cal__expense_nursing(self, df):
         df['expense_nursing'] = df.apply(
             lambda x: x['expense_nursing'] - self.__expense_monthly_single_nursing
             if x['age'] >= self.age_of_nursing else x['expense_nursing'],
@@ -272,6 +256,7 @@ class Retirement:
             axis=1
         )
 
+    def cal__saving(self, df):
         # calculte saving
         df['saving'] = 0
         df.loc[df['year'] == self.date_of_money_value.year, 'saving'] = -self.money_value(self.saving)
@@ -304,7 +289,36 @@ class Retirement:
             cal__saving,
             axis=1
         )
-        del previous_saving
+
+    def build_data(
+            self,
+            detail=False
+    ) -> pd.DataFrame:
+        # years scale from work to death
+        time_scale = range(self.date_of_work.year, self.date_of_death.year + 1)
+
+        df_timeframe = self.build__time_frame(time_scale)
+
+        # the values are base on the current year's inflation
+        df_expense = self.build__df_expense(time_scale)
+
+        df_income = self.build__df_income(time_scale)
+
+        # merge df's
+        df = df_timeframe.merge(
+            df_expense if detail else df_expense[['year', 'expense_total']],
+            on='year'
+        )
+        df = df.merge(
+            df_income if detail else df_income[['year', 'income_total']],
+            on='year'
+        )
+
+        del df_timeframe, df_expense, df_income, time_scale
+
+        self.cal__expense_nursing(df)
+
+        self.cal__saving(df)
 
         return df
 
