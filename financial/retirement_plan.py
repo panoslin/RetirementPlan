@@ -101,7 +101,7 @@ class Retirement:
 
     def money_value(self, amount):
         """
-        calculate the money value to date_of_now.year
+        Calculate the money value to date_of_now.year
         """
         return TimeValue.pv(
             rate=self.INFLATION,
@@ -110,10 +110,9 @@ class Retirement:
             fv=amount
         )
 
-    def cal__expense_couple(self, year, expense, maximum):
+    def cal__expense_couple(self, year, expense, maximum, multiplier=2):
         """
-        # todo: multiplier
-        double the expense if married
+        Multiply the expense if married
         :return:
         """
         age = year - self.date_of_birth.year
@@ -126,7 +125,7 @@ class Retirement:
         if age < self.age_of_wedding:
             return expense
         else:
-            return 2 * expense
+            return multiplier * expense
 
     @staticmethod
     def cal__growth_flow(
@@ -135,6 +134,14 @@ class Retirement:
             amount,
             maximum=sys.maxsize
     ):
+        """
+        Calculte a series of cash flows grow with time
+        :param year:
+        :param rate:
+        :param amount:
+        :param maximum:
+        :return:
+        """
         growth_amount = amount * (1 + rate) ** TimeValue.nper(year)
         return growth_amount if abs(growth_amount) <= abs(maximum) else maximum
 
@@ -174,7 +181,8 @@ class Retirement:
                 "expense_renting": self.cal__expense_couple(
                     year=year,
                     expense=self.money_value(self.expense_monthly_renting),
-                    maximum=self.max_expense_monthly_renting
+                    maximum=self.max_expense_monthly_renting,
+                    multiplier=3
                 )
                 if year - self.date_of_birth.year <= self.age_of_housing
                 else 0,
