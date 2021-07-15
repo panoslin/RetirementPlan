@@ -25,14 +25,11 @@ import pandas as pd
 import datetime
 
 
-class Retirement:
+class Retirement(TimeValue):
 
     def __init__(
             self,
     ):
-        pass
-
-        self.date_of_now = datetime.datetime.now()
 
         ## RATE
         self.INFLATION = 0.05
@@ -41,6 +38,7 @@ class Retirement:
         self.RATE_HOUSING_LOAD = 0.07
         self.RATE_CAR_LOAD = 0.07
         self.RATE_ESCALATION_LIVING = 0.05
+
 
         ## DATE
         __date_of_money_value = '2021/07/11'  # all the money value is based on this date
@@ -52,6 +50,7 @@ class Retirement:
         __date_of_work_spouse = '2025/01/01'
         self.__death_age = 100
 
+        self.date_of_now = datetime.datetime.now()
         self.date_of_money_value = str2datetime(__date_of_money_value)
         self.date_of_birth = str2datetime(__date_of_birth)
         self.date_of_birth_spouse = str2datetime(__date_of_birth_spouse)
@@ -105,9 +104,9 @@ class Retirement:
         """
         Calculate the money value to date_of_now.year
         """
-        return TimeValue.pv(
+        return self.pv(
             rate=self.INFLATION,
-            nper=TimeValue.nper(self.date_of_money_value.year),
+            nper=self.nper(self.date_of_money_value.year),
             pmt=0,
             fv=amount
         )
@@ -129,8 +128,8 @@ class Retirement:
         else:
             return multiplier * expense
 
-    @staticmethod
     def cal__growth_flow(
+            self,
             year,
             rate,
             amount,
@@ -144,7 +143,7 @@ class Retirement:
         :param maximum:
         :return:
         """
-        growth_amount = amount * (1 + rate) ** TimeValue.nper(year)
+        growth_amount = amount * (1 + rate) ** self.nper(year)
         return growth_amount if abs(growth_amount) <= abs(maximum) else maximum
 
     def build__time_frame(self, time_scale):
@@ -187,7 +186,7 @@ class Retirement:
                     expense=self.expense_monthly_recreation,
                     maximum=self.max_expense_monthly_recreation
                 ),
-                "expense_wedding": -TimeValue.pmt_with_down_pmt(
+                "expense_wedding": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_wedding,
                     end_year=self.date_of_birth.year + self.age_of_wedding + 1,
@@ -195,7 +194,7 @@ class Retirement:
                     down_pmt_percentage=0,
                     amount=self.expense_wedding
                 ),
-                "expense_car": -TimeValue.pmt_with_down_pmt(
+                "expense_car": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_car,
                     end_year=self.date_of_birth.year + self.age_of_car + self.__loan_term_car,
@@ -203,7 +202,7 @@ class Retirement:
                     down_pmt_percentage=self.__percentage_first_pmt_car,
                     amount=self.expense_car
                 ),
-                "expense_housing": -TimeValue.pmt_with_down_pmt(
+                "expense_housing": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_housing,
                     end_year=self.date_of_birth.year + self.age_of_housing + self.__loan_term_housing,
@@ -270,7 +269,7 @@ class Retirement:
                 return 0
             elif currnet_row['year'] == self.date_of_now.year:
                 # current saving + rest of the saving of the year with interest
-                current_saving = currnet_row['saving'] - TimeValue.fv(
+                current_saving = currnet_row['saving'] - self.fv(
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12 - self.date_of_now.month,
                     currnet_row['income_total'] + currnet_row['expense_total']
@@ -279,7 +278,7 @@ class Retirement:
                 return current_saving
             else:
                 # previous saving with interest + year's of saving with interest
-                current_saving = previous_saving * (1 + self.RATE_YEARLY_GROWTH_PORTFOLIO) - TimeValue.fv(
+                current_saving = previous_saving * (1 + self.RATE_YEARLY_GROWTH_PORTFOLIO) - self.fv(
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12,
                     currnet_row['income_total'] + currnet_row['expense_total']
