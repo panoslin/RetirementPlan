@@ -146,7 +146,7 @@ class Retirement(TimeValue):
         growth_amount = amount * (1 + rate) ** self.nper(year)
         return growth_amount if abs(growth_amount) <= abs(maximum) else maximum
 
-    def build__time_frame(self, time_scale):
+    def build__df_time_frame(self, time_scale):
         df_timeframe = pd.DataFrame(
             {
                 "year": year,
@@ -246,6 +246,9 @@ class Retirement(TimeValue):
         return df_income
 
     def cal__expense_nursing(self, df):
+        """
+        Parents nursing expense and the couple's
+        """
         df['expense_nursing'] = df.apply(
             lambda x: x['expense_nursing'] - self.__expense_monthly_single_nursing
             if x['age'] >= self.age_of_nursing else x['expense_nursing'],
@@ -258,8 +261,11 @@ class Retirement(TimeValue):
         )
 
     def cal__saving(self, df):
-        # calculte saving
+        """
+        Calculte cummulative saving
+        """
         df['saving'] = 0
+        # current saving
         df.loc[df['year'] == self.date_of_money_value.year, 'saving'] = -self.saving
         previous_saving = 0
 
@@ -268,8 +274,13 @@ class Retirement(TimeValue):
             if currnet_row['year'] < self.date_of_now.year:
                 return 0
             elif currnet_row['year'] == self.date_of_now.year:
-                # current saving + rest of the saving of the year with interest
-                current_saving = currnet_row['saving'] - self.fv(
+                # current saving with interest + rest of the saving of the year with interest
+                current_saving = -self.fv(
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO/12,
+                    12 - self.date_of_now.month,
+                    0,
+                    currnet_row['saving']
+                ) - self.fv(
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12 - self.date_of_now.month,
                     currnet_row['income_total'] + currnet_row['expense_total']
@@ -278,7 +289,12 @@ class Retirement(TimeValue):
                 return current_saving
             else:
                 # previous saving with interest + year's of saving with interest
-                current_saving = previous_saving * (1 + self.RATE_YEARLY_GROWTH_PORTFOLIO) - self.fv(
+                current_saving = -self.fv(
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO/12,
+                    12,
+                    0,
+                    previous_saving
+                ) - self.fv(
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12,
                     currnet_row['income_total'] + currnet_row['expense_total']
@@ -295,10 +311,14 @@ class Retirement(TimeValue):
             self,
             detail=False
     ) -> pd.DataFrame:
+        """
+        Build up cash flow DataFrame
+        """
+
         # years scale from work to death
         time_scale = range(self.date_of_work.year, self.date_of_death.year + 1)
 
-        df_timeframe = self.build__time_frame(time_scale)
+        df_timeframe = self.build__df_time_frame(time_scale)
 
         # the values are base on the current year's inflation
         df_expense = self.build__df_expense(time_scale)
