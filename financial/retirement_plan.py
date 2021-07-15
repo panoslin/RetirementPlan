@@ -60,45 +60,76 @@ class Retirement(TimeValue):
         self.date_of_work_spouse = str2datetime(__date_of_work_spouse)
         self.date_of_death = self.date_of_birth + datetime.timedelta(days=365 * self.__death_age)
 
+
         ## EXPENSES
         # LIVING
-        self.expense_monthly_food = self.money_value(3500)
-        self.max_expense_monthly_food = 13500
-        self.expense_monthly_renting = self.money_value(2000)
-        self.max_expense_monthly_renting = 15000
-        self.expense_monthly_recreation = self.money_value(1200)
-        self.max_expense_monthly_recreation = 12000
+        __expense_monthly_food = 3500
+        __max_expense_monthly_food = 13500
+        __expense_monthly_renting = 2000
+        __max_expense_monthly_renting = 15000
+        __expense_monthly_recreation = 1200
+        __max_expense_monthly_recreation = 12000
+
+        self.expense_monthly_food = self.money_value(__expense_monthly_food)
+        self.max_expense_monthly_food = self.money_value(__max_expense_monthly_food)
+        self.expense_monthly_renting = self.money_value(__expense_monthly_renting)
+        self.max_expense_monthly_renting = self.money_value(__max_expense_monthly_renting)
+        self.expense_monthly_recreation = self.money_value(__expense_monthly_recreation)
+        self.max_expense_monthly_recreation = self.money_value(__max_expense_monthly_recreation)
+
         # WEDDING
-        self.age_of_wedding = 29
+        __age_of_wedding = 29
+
+        self.age_of_wedding = __age_of_wedding
         self.expense_wedding = self.money_value(200000)
+
         # CAR
-        self.age_of_car = 30
-        self.__loan_term_car = 5
-        self.__percentage_first_pmt_car = 0.14
+        __age_of_car = 30
+
+        self.loan_term_car = 5
+        self.percentage_first_pmt_car = 0.14
+        self.age_of_car = __age_of_car
         self.expense_car = self.money_value(250000)
+
         # HOUSING
-        self.age_of_housing = 37
+        __age_of_housing = 37
         __price_per_square = 70000
         __area = 150
         __price_per_decoration = 6000
-        self.__loan_term_housing = 30
-        self.__percentage_first_pmt_housing = 0.3
+
+        self.loan_term_housing = 30
+        self.percentage_first_pmt_housing = 0.3
+        self.age_of_housing = __age_of_housing
         self.expense_housing = self.money_value(
             (__price_per_square + __price_per_decoration) * __area
         )
+
         # PARENTS NURSING
-        self.age_of_nursing = 70
-        self.__expense_monthly_single_nursing = 20000
-        self.expense_monthly_nursing = self.__expense_monthly_single_nursing * 4
+        __age_of_nursing = 70
+        __expense_monthly_single_nursing = 20000
+
+        self.expense_monthly_single_nursing = __expense_monthly_single_nursing
+        self.age_of_nursing = __age_of_nursing
+        self.expense_monthly_nursing = self.expense_monthly_single_nursing * 4
+
         # RETIREMENT
-        self.age_of_retirement = 60
-        self.expense_monthly_pension_couple = self.money_value(20000)
+        __age_of_retirement = 60
+        __expense_monthly_pension_couple = 20000
+
+        self.age_of_retirement = __age_of_retirement
+        self.expense_monthly_pension_couple = self.money_value(__expense_monthly_pension_couple)
 
         ## INCOME/SAVING
-        self.income_monthly = self.money_value(20000)
-        self.saving = self.money_value(27485)
-        self.income_monthly_spouse = self.money_value(5000)
-        self.max_income_monthly = self.money_value(50000)
+        __income_monthly = 20000
+        __saving = 27485
+        __income_monthly_spouse = 5000
+        __max_income_monthly = 50000
+
+
+        self.income_monthly = self.money_value(__income_monthly)
+        self.saving = self.money_value(__saving)
+        self.income_monthly_spouse = self.money_value(__income_monthly_spouse)
+        self.max_income_monthly = self.money_value(__max_income_monthly)
 
     def money_value(self, amount):
         """
@@ -197,17 +228,17 @@ class Retirement(TimeValue):
                 "expense_car": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_car,
-                    end_year=self.date_of_birth.year + self.age_of_car + self.__loan_term_car,
+                    end_year=self.date_of_birth.year + self.age_of_car + self.loan_term_car,
                     loan_rate=self.RATE_CAR_LOAD,
-                    down_pmt_percentage=self.__percentage_first_pmt_car,
+                    down_pmt_percentage=self.percentage_first_pmt_car,
                     amount=self.expense_car
                 ),
                 "expense_housing": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_housing,
-                    end_year=self.date_of_birth.year + self.age_of_housing + self.__loan_term_housing,
+                    end_year=self.date_of_birth.year + self.age_of_housing + self.loan_term_housing,
                     loan_rate=self.RATE_HOUSING_LOAD,
-                    down_pmt_percentage=self.__percentage_first_pmt_housing,
+                    down_pmt_percentage=self.percentage_first_pmt_housing,
                     amount=self.expense_housing
                 ),
                 "expense_nursing": -self.expense_monthly_nursing
@@ -250,12 +281,12 @@ class Retirement(TimeValue):
         Parents nursing expense and the couple's
         """
         df['expense_nursing'] = df.apply(
-            lambda x: x['expense_nursing'] - self.__expense_monthly_single_nursing
+            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
             if x['age'] >= self.age_of_nursing else x['expense_nursing'],
             axis=1
         )
         df['expense_nursing'] = df.apply(
-            lambda x: x['expense_nursing'] - self.__expense_monthly_single_nursing
+            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
             if x['age_spouse'] >= self.age_of_nursing else x['expense_nursing'],
             axis=1
         )
