@@ -34,6 +34,14 @@ class Retirement:
 
         self.date_of_now = datetime.datetime.now()
 
+        ## RATE
+        self.INFLATION = 0.05
+        self.RATE_YEARLY_GROWTH_SALARY = 0.15
+        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.15
+        self.RATE_HOUSING_LOAD = 0.07
+        self.RATE_CAR_LOAD = 0.07
+        self.RATE_ESCALATION_LIVING = 0.05
+
         ## DATE
         __date_of_money_value = '2021/07/11'  # all the money value is based on this date
         __date_of_birth = '1995/09/29'
@@ -55,20 +63,20 @@ class Retirement:
 
         ## EXPENSES
         # LIVING
-        self.expense_monthly_food = 3500
+        self.expense_monthly_food = self.money_value(3500)
         self.max_expense_monthly_food = 13500
-        self.expense_monthly_renting = 2000
+        self.expense_monthly_renting = self.money_value(2000)
         self.max_expense_monthly_renting = 15000
-        self.expense_monthly_recreation = 1200
+        self.expense_monthly_recreation = self.money_value(1200)
         self.max_expense_monthly_recreation = 12000
         # WEDDING
         self.age_of_wedding = 29
-        self.expense_wedding = 200000
+        self.expense_wedding = self.money_value(200000)
         # CAR
         self.age_of_car = 30
         self.__loan_term_car = 5
         self.__percentage_first_pmt_car = 0.14
-        self.expense_car = 250000
+        self.expense_car = self.money_value(250000)
         # HOUSING
         self.age_of_housing = 37
         __price_per_square = 70000
@@ -76,28 +84,22 @@ class Retirement:
         __price_per_decoration = 6000
         self.__loan_term_housing = 30
         self.__percentage_first_pmt_housing = 0.3
-        self.expense_housing = (__price_per_square + __price_per_decoration) * __area
+        self.expense_housing = self.money_value(
+            (__price_per_square + __price_per_decoration) * __area
+        )
         # PARENTS NURSING
         self.age_of_nursing = 70
         self.__expense_monthly_single_nursing = 20000
         self.expense_monthly_nursing = self.__expense_monthly_single_nursing * 4
         # RETIREMENT
         self.age_of_retirement = 60
-        self.expense_monthly_pension_couple = 20000
+        self.expense_monthly_pension_couple = self.money_value(20000)
 
         ## INCOME/SAVING
-        self.income_monthly = 20000
-        self.saving = 27485
-        self.income_monthly_spouse = 5000
-        self.max_income_monthly = 50000
-
-        ## RATE
-        self.INFLATION = 0.05
-        self.RATE_YEARLY_GROWTH_SALARY = 0.15
-        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.15
-        self.RATE_HOUSING_LOAD = 0.07
-        self.RATE_CAR_LOAD = 0.07
-        self.RATE_ESCALATION_LIVING = 0.05
+        self.income_monthly = self.money_value(20000)
+        self.saving = self.money_value(27485)
+        self.income_monthly_spouse = self.money_value(5000)
+        self.max_income_monthly = self.money_value(50000)
 
     def money_value(self, amount):
         """
@@ -169,12 +171,12 @@ class Retirement:
                 "year": year,
                 "expense_food": self.cal__expense_couple(
                     year=year,
-                    expense=self.money_value(self.expense_monthly_food),
+                    expense=self.expense_monthly_food,
                     maximum=self.max_expense_monthly_food
                 ),
                 "expense_renting": self.cal__expense_couple(
                     year=year,
-                    expense=self.money_value(self.expense_monthly_renting),
+                    expense=self.expense_monthly_renting,
                     maximum=self.max_expense_monthly_renting,
                     multiplier=3
                 )
@@ -182,7 +184,7 @@ class Retirement:
                 else 0,
                 "expense_recreation": self.cal__expense_couple(
                     year=year,
-                    expense=self.money_value(self.expense_monthly_recreation),
+                    expense=self.expense_monthly_recreation,
                     maximum=self.max_expense_monthly_recreation
                 ),
                 "expense_wedding": -TimeValue.pmt_with_down_pmt(
@@ -191,7 +193,7 @@ class Retirement:
                     end_year=self.date_of_birth.year + self.age_of_wedding + 1,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=self.money_value(self.expense_wedding)
+                    amount=self.expense_wedding
                 ),
                 "expense_car": -TimeValue.pmt_with_down_pmt(
                     year=year,
@@ -199,7 +201,7 @@ class Retirement:
                     end_year=self.date_of_birth.year + self.age_of_car + self.__loan_term_car,
                     loan_rate=self.RATE_CAR_LOAD,
                     down_pmt_percentage=self.__percentage_first_pmt_car,
-                    amount=self.money_value(self.expense_car)
+                    amount=self.expense_car
                 ),
                 "expense_housing": -TimeValue.pmt_with_down_pmt(
                     year=year,
@@ -207,13 +209,13 @@ class Retirement:
                     end_year=self.date_of_birth.year + self.age_of_housing + self.__loan_term_housing,
                     loan_rate=self.RATE_HOUSING_LOAD,
                     down_pmt_percentage=self.__percentage_first_pmt_housing,
-                    amount=self.money_value(self.expense_housing)
+                    amount=self.expense_housing
                 ),
                 "expense_nursing": -self.expense_monthly_nursing
                 if self.date_of_birth_parents.year + self.age_of_nursing <= year < (
                         self.date_of_birth_parents + datetime.timedelta(days=365 * (self.__death_age + 5))).year
                 else 0,
-                "expense_pension": self.money_value(self.expense_monthly_pension_couple)
+                "expense_pension": self.expense_monthly_pension_couple
                 if year >= self.date_of_birth.year + self.age_of_retirement
                 else 0
             }
@@ -229,14 +231,14 @@ class Retirement:
                 "income": self.cal__growth_flow(
                     year=year,
                     rate=self.RATE_YEARLY_GROWTH_SALARY,
-                    amount=-self.money_value(self.income_monthly),
-                    maximum=-self.money_value(self.max_income_monthly),
+                    amount=-self.income_monthly,
+                    maximum=-self.max_income_monthly,
                 ) if self.date_of_work.year <= year < self.date_of_birth.year + self.age_of_retirement else 0,
                 "income_spouse": self.cal__growth_flow(
                     year=year,
                     rate=self.RATE_YEARLY_GROWTH_SALARY,
-                    amount=-self.money_value(self.income_monthly_spouse),
-                    maximum=-self.money_value(self.max_income_monthly),
+                    amount=-self.income_monthly_spouse,
+                    maximum=-self.max_income_monthly,
                 ) if self.date_of_work_spouse.year <= year < self.date_of_birth_spouse.year + self.age_of_retirement else 0,
             }
             for year in time_scale
@@ -259,7 +261,7 @@ class Retirement:
     def cal__saving(self, df):
         # calculte saving
         df['saving'] = 0
-        df.loc[df['year'] == self.date_of_money_value.year, 'saving'] = -self.money_value(self.saving)
+        df.loc[df['year'] == self.date_of_money_value.year, 'saving'] = -self.saving
         previous_saving = 0
 
         def cal__saving(currnet_row):
