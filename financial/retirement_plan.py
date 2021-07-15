@@ -60,45 +60,76 @@ class Retirement(TimeValue):
         self.date_of_work_spouse = str2datetime(__date_of_work_spouse)
         self.date_of_death = self.date_of_birth + datetime.timedelta(days=365 * self.__death_age)
 
+
         ## EXPENSES
         # LIVING
-        self.expense_monthly_food = self.money_value(***REMOVED***)
-        self.max_expense_monthly_food = 1***REMOVED***
-        self.expense_monthly_renting = self.money_value(***REMOVED***)
-        self.max_expense_monthly_renting = ***REMOVED***00
-        self.expense_monthly_recreation = self.money_value(***REMOVED***)
-        self.max_expense_monthly_recreation = 1***REMOVED***
+        __expense_monthly_food = ***REMOVED***
+        __max_expense_monthly_food = 1***REMOVED***
+        __expense_monthly_renting = ***REMOVED***
+        __max_expense_monthly_renting = ***REMOVED***00
+        __expense_monthly_recreation = ***REMOVED***
+        __max_expense_monthly_recreation = 1***REMOVED***
+
+        self.expense_monthly_food = self.money_value(__expense_monthly_food)
+        self.max_expense_monthly_food = self.money_value(__max_expense_monthly_food)
+        self.expense_monthly_renting = self.money_value(__expense_monthly_renting)
+        self.max_expense_monthly_renting = self.money_value(__max_expense_monthly_renting)
+        self.expense_monthly_recreation = self.money_value(__expense_monthly_recreation)
+        self.max_expense_monthly_recreation = self.money_value(__max_expense_monthly_recreation)
+
         # WEDDING
-        self.age_of_wedding = ***REMOVED***
+        __age_of_wedding = ***REMOVED***
+
+        self.age_of_wedding = __age_of_wedding
         self.expense_wedding = self.money_value(***REMOVED***0)
+
         # CAR
-        self.age_of_car = ***REMOVED***
-        self.__loan_term_car = 5
-        self.__percentage_first_pmt_car = 0.14
+        __age_of_car = ***REMOVED***
+
+        self.loan_term_car = 5
+        self.percentage_first_pmt_car = 0.14
+        self.age_of_car = __age_of_car
         self.expense_car = self.money_value(2***REMOVED***0)
+
         # HOUSING
-        self.age_of_housing = ***REMOVED***
+        __age_of_housing = ***REMOVED***
         __price_per_square = ***REMOVED***
         __area = ***REMOVED***
         __price_per_decoration = ***REMOVED***
-        self.__loan_term_housing = ***REMOVED***
-        self.__percentage_first_pmt_housing = 0.3
+
+        self.loan_term_housing = ***REMOVED***
+        self.percentage_first_pmt_housing = 0.3
+        self.age_of_housing = __age_of_housing
         self.expense_housing = self.money_value(
             (__price_per_square + __price_per_decoration) * __area
         )
+
         # PARENTS NURSING
-        self.age_of_nursing = ***REMOVED***
-        self.__expense_monthly_single_nursing = ***REMOVED***
-        self.expense_monthly_nursing = self.__expense_monthly_single_nursing * 4
+        __age_of_nursing = ***REMOVED***
+        __expense_monthly_single_nursing = ***REMOVED***
+
+        self.expense_monthly_single_nursing = __expense_monthly_single_nursing
+        self.age_of_nursing = __age_of_nursing
+        self.expense_monthly_nursing = self.expense_monthly_single_nursing * 4
+
         # RETIREMENT
-        self.age_of_retirement = ***REMOVED***
-        self.expense_monthly_pension_couple = self.money_value(***REMOVED***)
+        __age_of_retirement = ***REMOVED***
+        __expense_monthly_pension_couple = ***REMOVED***
+
+        self.age_of_retirement = __age_of_retirement
+        self.expense_monthly_pension_couple = self.money_value(__expense_monthly_pension_couple)
 
         ## INCOME/SAVING
-        self.income_monthly = self.money_value(***REMOVED***)
-        self.saving = self.money_value(***REMOVED***)
-        self.income_monthly_spouse = self.money_value(***REMOVED***)
-        self.max_income_monthly = self.money_value(***REMOVED***0)
+        __income_monthly = ***REMOVED***
+        __saving = ***REMOVED***
+        __income_monthly_spouse = ***REMOVED***
+        __max_income_monthly = ***REMOVED***0
+
+
+        self.income_monthly = self.money_value(__income_monthly)
+        self.saving = self.money_value(__saving)
+        self.income_monthly_spouse = self.money_value(__income_monthly_spouse)
+        self.max_income_monthly = self.money_value(__max_income_monthly)
 
     def money_value(self, amount):
         """
@@ -197,17 +228,17 @@ class Retirement(TimeValue):
                 "expense_car": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_car,
-                    end_year=self.date_of_birth.year + self.age_of_car + self.__loan_term_car,
+                    end_year=self.date_of_birth.year + self.age_of_car + self.loan_term_car,
                     loan_rate=self.RATE_CAR_LOAD,
-                    down_pmt_percentage=self.__percentage_first_pmt_car,
+                    down_pmt_percentage=self.percentage_first_pmt_car,
                     amount=self.expense_car
                 ),
                 "expense_housing": -self.pmt_with_down_pmt(
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_housing,
-                    end_year=self.date_of_birth.year + self.age_of_housing + self.__loan_term_housing,
+                    end_year=self.date_of_birth.year + self.age_of_housing + self.loan_term_housing,
                     loan_rate=self.RATE_HOUSING_LOAD,
-                    down_pmt_percentage=self.__percentage_first_pmt_housing,
+                    down_pmt_percentage=self.percentage_first_pmt_housing,
                     amount=self.expense_housing
                 ),
                 "expense_nursing": -self.expense_monthly_nursing
@@ -250,12 +281,12 @@ class Retirement(TimeValue):
         Parents nursing expense and the couple's
         """
         df['expense_nursing'] = df.apply(
-            lambda x: x['expense_nursing'] - self.__expense_monthly_single_nursing
+            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
             if x['age'] >= self.age_of_nursing else x['expense_nursing'],
             axis=1
         )
         df['expense_nursing'] = df.apply(
-            lambda x: x['expense_nursing'] - self.__expense_monthly_single_nursing
+            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
             if x['age_spouse'] >= self.age_of_nursing else x['expense_nursing'],
             axis=1
         )
