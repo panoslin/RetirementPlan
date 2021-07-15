@@ -17,13 +17,7 @@ import sys
 
 __package__ = Path(__file__).parent.stem
 
-from .time_value_of_money import (
-    nper,
-    pv,
-    fv,
-    pmt,
-    pmt_with_down_pmt,
-)
+from .time_value_of_money import TimeValue
 from .utils import (
     str2datetime
 )
@@ -98,7 +92,7 @@ RATE_CAR_LOAD = 0.07
 RATE_ESCALATION_LIVING = 0.05
 
 # calculate the money value to date_of_now.year
-money_value = lambda x: pv(INFLATION, nper(date_of_money_value.year), 0, x)
+money_value = lambda x: TimeValue.pv(INFLATION, TimeValue.nper(date_of_money_value.year), 0, x)
 
 
 def cal__expense_couple(year, expense, maximum):
@@ -125,7 +119,7 @@ def cal__growth_flow(
         amount,
         maximum=sys.maxsize
 ):
-    growth_amount = amount * (1 + rate) ** nper(year)
+    growth_amount = amount * (1 + rate) ** TimeValue.nper(year)
     return growth_amount if abs(growth_amount) <= abs(maximum) else maximum
 
 # def cal__nursing(
@@ -187,7 +181,7 @@ def build_data(
                 expense=money_value(expense_monthly_recreation),
                 maximum=max_expense_monthly_recreation
             ),
-            "expense_wedding": -pmt_with_down_pmt(
+            "expense_wedding": -TimeValue.pmt_with_down_pmt(
                 year=year,
                 start_year=date_of_birth.year + age_of_wedding,
                 end_year=date_of_birth.year + age_of_wedding + 1,
@@ -195,7 +189,7 @@ def build_data(
                 down_pmt_percentage=0,
                 amount=money_value(expense_wedding)
             ),
-            "expense_car": -pmt_with_down_pmt(
+            "expense_car": -TimeValue.pmt_with_down_pmt(
                 year=year,
                 start_year=date_of_birth.year + age_of_car,
                 end_year=date_of_birth.year + age_of_car + __loan_term_car,
@@ -203,7 +197,7 @@ def build_data(
                 down_pmt_percentage=__percentage_first_pmt_car,
                 amount=money_value(expense_car)
             ),
-            "expense_housing": -pmt_with_down_pmt(
+            "expense_housing": -TimeValue.pmt_with_down_pmt(
                 year=year,
                 start_year=date_of_birth.year + age_of_housing,
                 end_year=date_of_birth.year + age_of_housing + __loan_term_housing,
@@ -279,7 +273,7 @@ def build_data(
             return 0
         elif currnet_row['year'] == date_of_now.year:
             # current saving + rest of the saving of the year with interest
-            current_saving = currnet_row['saving'] - fv(
+            current_saving = currnet_row['saving'] - TimeValue.fv(
                 RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                 12 - date_of_now.month,
                 currnet_row['income_total'] + currnet_row['expense_total']
@@ -288,7 +282,7 @@ def build_data(
             return current_saving
         else:
             # previous saving with interest + year's of saving with interest
-            current_saving = previous_saving * (1 + RATE_YEARLY_GROWTH_PORTFOLIO) - fv(
+            current_saving = previous_saving * (1 + RATE_YEARLY_GROWTH_PORTFOLIO) - TimeValue.fv(
                 RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                 12,
                 currnet_row['income_total'] + currnet_row['expense_total']
