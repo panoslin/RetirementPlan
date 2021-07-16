@@ -298,7 +298,6 @@ class Retirement(TimeValue):
                     amount=-self.income_monthly_spouse,
                     maximum=-self.max_income_monthly,
                 ) if self.date_of_work_spouse.year <= year < self.date_of_birth_spouse.year + self.age_of_retirement else 0,
-                # "income_portfolio":
             }
             for year in time_scale
         )
@@ -309,15 +308,16 @@ class Retirement(TimeValue):
         """
         Calculte cummulative saving
         """
+        df['income_portfolio_annually'] = 0
         df['saving'] = 0
-        # current saving
+        # saving on money value date (the date filling in the data)
         df.loc[df['year'] == self.date_of_money_value.year, 'saving'] = -self.saving
         previous_saving = 0
 
         def cal__saving(currnet_row):
             nonlocal previous_saving
             if currnet_row['year'] < self.date_of_money_value.year:
-                return 0
+                return 0, 0
             elif currnet_row['year'] == self.date_of_money_value.year:
                 # current saving with interest + rest of the saving of the year with interest
                 previous_saving_with_interest = -self.fv(
@@ -332,8 +332,9 @@ class Retirement(TimeValue):
                     currnet_row['income_total'] + currnet_row['expense_total']
                 )
                 current_saving = previous_saving_with_interest + income_with_interest
+                income_portfolio = previous_saving_with_interest - previous_saving
                 previous_saving = current_saving
-                return current_saving
+                return income_portfolio, current_saving
             else:
                 # previous saving with interest + year's of saving with interest
                 previous_saving_with_interest = -self.fv(
@@ -355,18 +356,34 @@ class Retirement(TimeValue):
                     12,
                     currnet_row['income_total'] + currnet_row['expense_total']
                 )
-                current_saving_fv = previous_saving_with_interest + income_with_interest
-                current_saving = -self.pv(
+                previous_saving_with_interest_pv = -self.pv(
                     self.INFLATION,
                     1,
                     0,
-                    current_saving_fv
+                    previous_saving_with_interest
                 )
+                income_with_interest_pv = -self.pv(
+                    self.INFLATION,
+                    1,
+                    0,
+                    income_with_interest
+                )
+                current_saving = previous_saving_with_interest_pv + income_with_interest_pv
+                income_portfolio = previous_saving_with_interest_pv - previous_saving
                 previous_saving = current_saving
-                return current_saving
+                return income_portfolio, current_saving
 
-        df['saving'] = df.apply(
+        df[['income_portfolio_annually', 'saving']] = df.agg(
             cal__saving,
+            axis=1
+        )
+
+    @staticmethod
+    def cal__financial_independence(df):
+        df['financial_independence'] = df.apply(
+            lambda x: 'SUCCESS'
+            if x['income_portfolio_annually'] + x['expense_total'] * 12 >= 0
+            else '-',
             axis=1
         )
 
@@ -401,8 +418,13 @@ class Retirement(TimeValue):
         del df_timeframe, df_expense, df_income, time_scale
 
         self.cal__saving(df)
+        self.cal__financial_independence(df)
 
         return df
+
+    def regression(self):
+        # todo
+        pass
 
 
 if __name__ == '__main__':
@@ -410,10 +432,10 @@ if __name__ == '__main__':
 
     plan = Retirement()
     retirement_df = plan.build_data(
-        detail=True
+        detail=False
     )
     df2excel(
         df=retirement_df,
         file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
-        num_format_column='F:R'
+        num_format_column='F:ZZ'
     )
