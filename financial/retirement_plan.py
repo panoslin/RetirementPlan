@@ -29,6 +29,28 @@ class Retirement(TimeValue):
 
     def __init__(
             self,
+            __date_of_money_value='***REMOVED***',  # all the money value is based on this date
+            __date_of_birth='***REMOVED***',
+            __date_of_birth_spouse='***REMOVED***',
+            __date_of_birth_child='***REMOVED***',
+            __date_of_birth_parents='***REMOVED***',
+            __date_of_work='***REMOVED***',
+            __date_of_work_spouse='***REMOVED***',
+            __age_of_wedding=***REMOVED***,
+            __age_of_car=***REMOVED***,
+            __age_of_housing=***REMOVED***,
+            __price_per_square=***REMOVED***,
+            __area=***REMOVED***,
+            __price_per_decoration=***REMOVED***,
+            __age_of_nursing=***REMOVED***,
+            __expense_monthly_single_nursing=***REMOVED***,
+            __age_of_retirement=***REMOVED***,
+            __expense_monthly_pension_couple=***REMOVED***,
+            __income_monthly=***REMOVED***,
+            __saving=***REMOVED***,
+            __income_monthly_spouse=***REMOVED***,
+            __max_income_monthly=***REMOVED***0,
+
     ):
 
         ## RATE
@@ -39,17 +61,9 @@ class Retirement(TimeValue):
         self.RATE_CAR_LOAD = 0.07
         self.RATE_ESCALATION_LIVING = 0.05
 
-
         ## DATE
-        __date_of_money_value = '***REMOVED***'  # all the money value is based on this date
-        __date_of_birth = '***REMOVED***'
-        __date_of_birth_spouse = '***REMOVED***'
-        __date_of_birth_child = '***REMOVED***'
-        __date_of_birth_parents = '***REMOVED***'
-        __date_of_work = '***REMOVED***'
-        __date_of_work_spouse = '***REMOVED***'
-        self.__death_age = 100
 
+        self.death_age = 100
         self.date_of_now = datetime.datetime.now()
         self.date_of_money_value = str2datetime(__date_of_money_value)
         self.date_of_birth = str2datetime(__date_of_birth)
@@ -58,8 +72,7 @@ class Retirement(TimeValue):
         self.date_of_birth_parents = str2datetime(__date_of_birth_parents)
         self.date_of_work = str2datetime(__date_of_work)
         self.date_of_work_spouse = str2datetime(__date_of_work_spouse)
-        self.date_of_death = self.date_of_birth + datetime.timedelta(days=365 * self.__death_age)
-
+        self.date_of_death = self.date_of_birth + datetime.timedelta(days=365 * self.death_age)
 
         ## EXPENSES
         # LIVING
@@ -120,12 +133,6 @@ class Retirement(TimeValue):
         self.expense_monthly_pension_couple = self.money_value(__expense_monthly_pension_couple)
 
         ## INCOME/SAVING
-        __income_monthly = ***REMOVED***
-        __saving = ***REMOVED***
-        __income_monthly_spouse = ***REMOVED***
-        __max_income_monthly = ***REMOVED***0
-
-
         self.income_monthly = self.money_value(__income_monthly)
         self.saving = self.money_value(__saving)
         self.income_monthly_spouse = self.money_value(__income_monthly_spouse)
@@ -242,8 +249,11 @@ class Retirement(TimeValue):
                     amount=self.expense_housing
                 ),
                 "expense_nursing": -self.expense_monthly_nursing
-                if self.date_of_birth_parents.year + self.age_of_nursing <= year < (
-                        self.date_of_birth_parents + datetime.timedelta(days=365 * (self.__death_age + 5))).year
+                if (
+                        self.date_of_birth_parents.year + self.age_of_nursing
+                        <= year
+                        < (self.date_of_birth_parents + datetime.timedelta(days=365 * self.death_age)).year
+                )
                 else 0,
                 "expense_pension": self.expense_monthly_pension_couple
                 if year >= self.date_of_birth.year + self.age_of_retirement
@@ -307,7 +317,7 @@ class Retirement(TimeValue):
             elif currnet_row['year'] == self.date_of_now.year:
                 # current saving with interest + rest of the saving of the year with interest
                 current_saving = -self.fv(
-                    self.RATE_YEARLY_GROWTH_PORTFOLIO/12,
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12 - self.date_of_now.month,
                     0,
                     currnet_row['saving']
@@ -321,7 +331,7 @@ class Retirement(TimeValue):
             else:
                 # previous saving with interest + year's of saving with interest
                 current_saving = -self.fv(
-                    self.RATE_YEARLY_GROWTH_PORTFOLIO/12,
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12,
                     0,
                     previous_saving
