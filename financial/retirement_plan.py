@@ -261,6 +261,7 @@ class Retirement(TimeValue):
             }
             for year in time_scale
         )
+        self.cal__expense_nursing(df_expense)
         df_expense['expense_total'] = df_expense.iloc[:, 1:].sum(axis=1)
         return df_expense
 
@@ -292,12 +293,12 @@ class Retirement(TimeValue):
         """
         df['expense_nursing'] = df.apply(
             lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
-            if x['age'] >= self.age_of_nursing else x['expense_nursing'],
+            if x['year'] - self.date_of_birth.year >= self.age_of_nursing else x['expense_nursing'],
             axis=1
         )
         df['expense_nursing'] = df.apply(
             lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
-            if x['age_spouse'] >= self.age_of_nursing else x['expense_nursing'],
+            if x['year'] - self.date_of_birth_spouse.year >= self.age_of_nursing else x['expense_nursing'],
             axis=1
         )
 
@@ -378,7 +379,6 @@ class Retirement(TimeValue):
 
         del df_timeframe, df_expense, df_income, time_scale
 
-        self.cal__expense_nursing(df)
 
         self.cal__saving(df)
 
@@ -387,6 +387,27 @@ class Retirement(TimeValue):
 
 if __name__ == '__main__':
     plan = Retirement()
-    plan.build_data(
-        detail=True
+    retirement_df = plan.build_data(
+        detail=False
     )
+    # Create a Pandas Excel writer using XlsxWriter as the engine.
+    writer = pd.ExcelWriter(
+        f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
+        engine='xlsxwriter'
+    )
+    retirement_df.to_excel(
+        writer,
+        index=False,
+    )
+    # set columns format
+    workbook = writer.book
+    worksheet = writer.sheets['Sheet1']
+    format1 = workbook.add_format({'num_format': '#,##0'})
+    worksheet.set_column('F:R', None, format1)
+    # set column width
+    for column in retirement_df:
+        column_length = max(retirement_df[column].astype(str).map(len).max(), len(column))
+        col_idx = retirement_df.columns.get_loc(column)
+        writer.sheets['Sheet1'].set_column(col_idx, col_idx, column_length + 1)
+    # close and save file
+    writer.save()
