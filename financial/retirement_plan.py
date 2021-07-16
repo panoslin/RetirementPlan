@@ -415,8 +415,37 @@ class Retirement(TimeValue):
 
 if __name__ == '__main__':
     from .utils import df2excel
+    import env
 
-    plan = Retirement()
+    plan = Retirement(
+        env.date_of_money_value,
+        env.date_of_birth,
+        env.date_of_birth_spouse,
+        env.date_of_birth_child,
+        env.date_of_birth_parents,
+        env.date_of_work,
+        env.date_of_work_spouse,
+        env.age_of_wedding,
+        env.age_of_car,
+        env.age_of_housing,
+        env.price_per_square,
+        env.area,
+        env.price_per_decoration,
+        env.age_of_nursing,
+        env.expense_monthly_single_nursing,
+        env.age_of_retirement,
+        env.expense_monthly_pension_couple,
+        env.income_monthly,
+        env.saving,
+        env.income_monthly_spouse,
+        env.max_income_monthly,
+        env.expense_monthly_food,
+        env.max_expense_monthly_food,
+        env.expense_monthly_renting,
+        env.max_expense_monthly_renting,
+        env.expense_monthly_recreation,
+        env.max_expense_monthly_recreation,
+    )
     retirement_df = plan.build_data(
         detail=False
     )
