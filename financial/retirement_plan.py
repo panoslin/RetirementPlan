@@ -31,33 +31,35 @@ class Retirement(TimeValue):
 
     def __init__(
             self,
-            __date_of_money_value='***REMOVED***',  # all the money value is based on this date
-            __date_of_birth='***REMOVED***/01/01',
-            __date_of_birth_spouse='***REMOVED***/01/01',
-            __date_of_birth_child='***REMOVED***',
+            __date_of_money_value='2021/07/11',  # all the money value is based on this date
+            __date_of_birth='2000/01/01',
+            __date_of_birth_spouse='2000/01/01',
+            __date_of_birth_child='2025/01/01',
             __date_of_birth_parents='1950/01/01',
             __date_of_work='2020/01/01',
             __date_of_work_spouse='2022/01/01',
             __age_of_wedding=25,
             __age_of_car=25,
-            __age_of_housing=***REMOVED***,
+            __age_of_housing=30,
             __price_per_square=10000,
-            __area=***REMOVED***,
-            __price_per_decoration=***REMOVED***00,
-            __age_of_nursing=***REMOVED***,
-            __expense_monthly_single_nursing=***REMOVED***0,
-            __age_of_retirement=***REMOVED***,
-            __expense_monthly_pension_couple=***REMOVED***0,
+            __area=150,
+            __price_per_decoration=6000,
+            __age_of_nursing=70,
+            __expense_monthly_single_nursing=20000,
+            __age_of_retirement=70,
+            __expense_monthly_pension_couple=20000,
             __income_monthly=10000,
             __saving=0,
             __income_monthly_spouse=10000,
             __max_income_monthly=100000,
-            __expense_monthly_food=***REMOVED***,
-            __max_expense_monthly_food=1***REMOVED***,
-            __expense_monthly_renting=***REMOVED***,
-            __max_expense_monthly_renting=***REMOVED***00,
-            __expense_monthly_recreation=***REMOVED***,
-            __max_expense_monthly_recreation=1***REMOVED***,
+            __expense_monthly_food=3500,
+            __max_expense_monthly_food=13500,
+            __expense_monthly_renting=5000,
+            __max_expense_monthly_renting=15000,
+            __expense_monthly_recreation=2000,
+            __max_expense_monthly_recreation=12000,
+            __expense_wedding=500000,
+            __expense_car=500000,
 
     ):
 
@@ -95,16 +97,16 @@ class Retirement(TimeValue):
 
         # WEDDING
         self.age_of_wedding = __age_of_wedding
-        self.expense_wedding = self.money_value(***REMOVED***)
+        self.expense_wedding = self.money_value(__expense_wedding)
 
         # CAR
         self.loan_term_car = 5
         self.percentage_first_pmt_car = 0.14
         self.age_of_car = __age_of_car
-        self.expense_car = self.money_value(***REMOVED***)
+        self.expense_car = self.money_value(__expense_car)
 
         # HOUSING
-        self.loan_term_housing = ***REMOVED***
+        self.loan_term_housing = 30
         self.percentage_first_pmt_housing = 0.3
         self.age_of_housing = __age_of_housing
         self.expense_housing = self.money_value(
@@ -445,6 +447,8 @@ if __name__ == '__main__':
         env.max_expense_monthly_renting,
         env.expense_monthly_recreation,
         env.max_expense_monthly_recreation,
+        env.expense_wedding,
+        env.expense_car,
     )
     retirement_df = plan.build_data(
         detail=False
