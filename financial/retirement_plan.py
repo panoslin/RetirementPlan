@@ -32,12 +32,12 @@ class Retirement(TimeValue):
     def __init__(
             self,
             __date_of_money_value='2021/07/11',  # all the money value is based on this date
-            __date_of_birth='2000/01/01',
-            __date_of_birth_spouse='2000/01/01',
+            __date_of_birth='1995/01/01',
+            __date_of_birth_spouse='1997/01/01',
             __date_of_birth_child='2025/01/01',
-            __date_of_birth_parents='1950/01/01',
-            __date_of_work='2020/01/01',
-            __date_of_work_spouse='2022/01/01',
+            __date_of_birth_parents='1965/01/01',
+            __date_of_work='2018/01/01',
+            __date_of_work_spouse='2020/01/01',
             __age_of_wedding=25,
             __age_of_car=25,
             __age_of_housing=30,
@@ -49,7 +49,7 @@ class Retirement(TimeValue):
             __age_of_retirement=70,
             __expense_monthly_pension_couple=20000,
             __income_monthly=10000,
-            __saving=0,
+            __saving=500000,
             __income_monthly_spouse=10000,
             __max_income_monthly=100000,
             __expense_monthly_food=3500,
@@ -67,7 +67,7 @@ class Retirement(TimeValue):
         self.INFLATION = 0.05
         self.RATE_YEARLY_GROWTH_SALARY = 0.15
         # including yield from money market, stock market, insurances and etc.
-        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.20
+        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.15
         self.RATE_HOUSING_LOAD = 0.07
         self.RATE_CAR_LOAD = 0.07
         self.RATE_ESCALATION_LIVING = 0.05
@@ -417,6 +417,8 @@ class Retirement(TimeValue):
 
 if __name__ == '__main__':
     from .utils import df2excel
+
+    # pass ur own data
     import env
 
     plan = Retirement(
@@ -451,7 +453,7 @@ if __name__ == '__main__':
         env.expense_car,
     )
     retirement_df = plan.build_data(
-        detail=False
+        detail=True
     )
     df2excel(
         df=retirement_df,
