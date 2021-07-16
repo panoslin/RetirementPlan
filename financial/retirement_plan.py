@@ -58,6 +58,8 @@ class Retirement(TimeValue):
             __max_expense_monthly_renting=15000,
             __expense_monthly_recreation=2000,
             __max_expense_monthly_recreation=12000,
+            __expense_wedding=500000,
+            __expense_car=500000,
 
     ):
 
@@ -95,13 +97,13 @@ class Retirement(TimeValue):
 
         # WEDDING
         self.age_of_wedding = __age_of_wedding
-        self.expense_wedding = self.money_value(200000)
+        self.expense_wedding = self.money_value(__expense_wedding)
 
         # CAR
         self.loan_term_car = 5
         self.percentage_first_pmt_car = 0.14
         self.age_of_car = __age_of_car
-        self.expense_car = self.money_value(250000)
+        self.expense_car = self.money_value(__expense_car)
 
         # HOUSING
         self.loan_term_housing = 30
@@ -445,6 +447,8 @@ if __name__ == '__main__':
         env.max_expense_monthly_renting,
         env.expense_monthly_recreation,
         env.max_expense_monthly_recreation,
+        env.expense_wedding,
+        env.expense_car,
     )
     retirement_df = plan.build_data(
         detail=False
