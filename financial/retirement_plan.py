@@ -32,7 +32,7 @@ class Retirement(TimeValue):
     def __init__(
             self,
             __date_of_money_value='***REMOVED***',  # all the money value is based on this date
-            __date_of_birth='***REMOVED***',
+            __date_of_birth='1995/09/***REMOVED***',
             __date_of_birth_spouse='***REMOVED***',
             __date_of_birth_child='***REMOVED***',
             __date_of_birth_parents='***REMOVED***',
@@ -41,23 +41,30 @@ class Retirement(TimeValue):
             __age_of_wedding=***REMOVED***,
             __age_of_car=***REMOVED***,
             __age_of_housing=***REMOVED***,
-            __price_per_square=***REMOVED***,
+            __price_per_square=***REMOVED***000,
             __area=***REMOVED***,
-            __price_per_decoration=***REMOVED***,
+            __price_per_decoration=***REMOVED***00,
             __age_of_nursing=***REMOVED***,
-            __expense_monthly_single_nursing=***REMOVED***,
+            __expense_monthly_single_nursing=***REMOVED***0,
             __age_of_retirement=***REMOVED***,
-            __expense_monthly_pension_couple=***REMOVED***,
-            __income_monthly=***REMOVED***,
+            __expense_monthly_pension_couple=***REMOVED***0,
+            __income_monthly=***REMOVED***0,
             __saving=***REMOVED***,
             __income_monthly_spouse=***REMOVED***,
-            __max_income_monthly=***REMOVED***0,
+            __max_income_monthly=***REMOVED***,
+            __expense_monthly_food=***REMOVED***,
+            __max_expense_monthly_food=1***REMOVED***,
+            __expense_monthly_renting=***REMOVED***,
+            __max_expense_monthly_renting=***REMOVED***00,
+            __expense_monthly_recreation=***REMOVED***,
+            __max_expense_monthly_recreation=1***REMOVED***,
 
     ):
 
         ## RATE
         self.INFLATION = 0.05
         self.RATE_YEARLY_GROWTH_SALARY = 0.15
+        # including yield from money market, stock market, insurances and etc.
         self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.20
         self.RATE_HOUSING_LOAD = 0.07
         self.RATE_CAR_LOAD = 0.07
@@ -78,12 +85,6 @@ class Retirement(TimeValue):
 
         ## EXPENSES
         # LIVING
-        __expense_monthly_food = ***REMOVED***
-        __max_expense_monthly_food = 1***REMOVED***
-        __expense_monthly_renting = ***REMOVED***
-        __max_expense_monthly_renting = ***REMOVED***00
-        __expense_monthly_recreation = ***REMOVED***
-        __max_expense_monthly_recreation = 1***REMOVED***
 
         self.expense_monthly_food = self.money_value(__expense_monthly_food)
         self.max_expense_monthly_food = self.money_value(__max_expense_monthly_food)
@@ -93,25 +94,16 @@ class Retirement(TimeValue):
         self.max_expense_monthly_recreation = self.money_value(__max_expense_monthly_recreation)
 
         # WEDDING
-        __age_of_wedding = ***REMOVED***
-
         self.age_of_wedding = __age_of_wedding
-        self.expense_wedding = self.money_value(***REMOVED***0)
+        self.expense_wedding = self.money_value(***REMOVED***)
 
         # CAR
-        __age_of_car = ***REMOVED***
-
         self.loan_term_car = 5
         self.percentage_first_pmt_car = 0.14
         self.age_of_car = __age_of_car
-        self.expense_car = self.money_value(2***REMOVED***0)
+        self.expense_car = self.money_value(***REMOVED***)
 
         # HOUSING
-        __age_of_housing = ***REMOVED***
-        __price_per_square = ***REMOVED***
-        __area = ***REMOVED***
-        __price_per_decoration = ***REMOVED***
-
         self.loan_term_housing = ***REMOVED***
         self.percentage_first_pmt_housing = 0.3
         self.age_of_housing = __age_of_housing
@@ -120,17 +112,11 @@ class Retirement(TimeValue):
         )
 
         # PARENTS NURSING
-        __age_of_nursing = ***REMOVED***
-        __expense_monthly_single_nursing = ***REMOVED***
-
         self.expense_monthly_single_nursing = __expense_monthly_single_nursing
         self.age_of_nursing = __age_of_nursing
         self.expense_monthly_nursing = self.expense_monthly_single_nursing * 4
 
         # RETIREMENT
-        __age_of_retirement = ***REMOVED***
-        __expense_monthly_pension_couple = ***REMOVED***
-
         self.age_of_retirement = __age_of_retirement
         self.expense_monthly_pension_couple = self.money_value(__expense_monthly_pension_couple)
 
