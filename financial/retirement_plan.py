@@ -7,6 +7,8 @@ OUTPUT:
 RATE_YEARLY_GROWTH_SALARY
 OR
 RATE_YEARLY_GROWTH_PORTFOLIO
+OR
+max_income_monthly
 
 and csv file
 
@@ -56,7 +58,7 @@ class Retirement(TimeValue):
         ## RATE
         self.INFLATION = 0.05
         self.RATE_YEARLY_GROWTH_SALARY = 0.15
-        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.15
+        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.20
         self.RATE_HOUSING_LOAD = 0.07
         self.RATE_CAR_LOAD = 0.07
         self.RATE_ESCALATION_LIVING = 0.05
@@ -184,6 +186,21 @@ class Retirement(TimeValue):
         growth_amount = amount * (1 + rate) ** self.nper(year)
         return growth_amount if abs(growth_amount) <= abs(maximum) else maximum
 
+    def cal__expense_nursing(self, df):
+        """
+        Parents nursing expense and the couple's
+        """
+        df['expense_nursing'] = df.apply(
+            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
+            if x['year'] - self.date_of_birth.year >= self.age_of_nursing else x['expense_nursing'],
+            axis=1
+        )
+        df['expense_nursing'] = df.apply(
+            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
+            if x['year'] - self.date_of_birth_spouse.year >= self.age_of_nursing else x['expense_nursing'],
+            axis=1
+        )
+
     def build__df_time_frame(self, time_scale):
         df_timeframe = pd.DataFrame(
             {
@@ -209,12 +226,12 @@ class Retirement(TimeValue):
                 "expense_food": self.cal__expense_couple(
                     year=year,
                     expense=self.expense_monthly_food,
-                    maximum=self.max_expense_monthly_food
+                    maximum=-self.max_expense_monthly_food
                 ),
                 "expense_renting": self.cal__expense_couple(
                     year=year,
                     expense=self.expense_monthly_renting,
-                    maximum=self.max_expense_monthly_renting,
+                    maximum=-self.max_expense_monthly_renting,
                     multiplier=3
                 )
                 if year - self.date_of_birth.year <= self.age_of_housing
@@ -222,7 +239,7 @@ class Retirement(TimeValue):
                 "expense_recreation": self.cal__expense_couple(
                     year=year,
                     expense=self.expense_monthly_recreation,
-                    maximum=self.max_expense_monthly_recreation
+                    maximum=-self.max_expense_monthly_recreation
                 ),
                 "expense_wedding": -self.pmt_with_down_pmt(
                     year=year,
@@ -281,26 +298,12 @@ class Retirement(TimeValue):
                     amount=-self.income_monthly_spouse,
                     maximum=-self.max_income_monthly,
                 ) if self.date_of_work_spouse.year <= year < self.date_of_birth_spouse.year + self.age_of_retirement else 0,
+                # "income_portfolio":
             }
             for year in time_scale
         )
         df_income['income_total'] = df_income.iloc[:, 1:].sum(axis=1)
         return df_income
-
-    def cal__expense_nursing(self, df):
-        """
-        Parents nursing expense and the couple's
-        """
-        df['expense_nursing'] = df.apply(
-            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
-            if x['year'] - self.date_of_birth.year >= self.age_of_nursing else x['expense_nursing'],
-            axis=1
-        )
-        df['expense_nursing'] = df.apply(
-            lambda x: x['expense_nursing'] - self.expense_monthly_single_nursing
-            if x['year'] - self.date_of_birth_spouse.year >= self.age_of_nursing else x['expense_nursing'],
-            axis=1
-        )
 
     def cal__saving(self, df):
         """
@@ -313,33 +316,51 @@ class Retirement(TimeValue):
 
         def cal__saving(currnet_row):
             nonlocal previous_saving
-            if currnet_row['year'] < self.date_of_now.year:
+            if currnet_row['year'] < self.date_of_money_value.year:
                 return 0
-            elif currnet_row['year'] == self.date_of_now.year:
+            elif currnet_row['year'] == self.date_of_money_value.year:
                 # current saving with interest + rest of the saving of the year with interest
-                current_saving = -self.fv(
+                previous_saving_with_interest = -self.fv(
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12 - self.date_of_now.month,
                     0,
                     currnet_row['saving']
-                ) - self.fv(
+                )
+                income_with_interest = - self.fv(
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
                     12 - self.date_of_now.month,
                     currnet_row['income_total'] + currnet_row['expense_total']
                 )
+                current_saving = previous_saving_with_interest + income_with_interest
                 previous_saving = current_saving
                 return current_saving
             else:
                 # previous saving with interest + year's of saving with interest
-                current_saving = -self.fv(
-                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
+                previous_saving_with_interest = -self.fv(
+                    # income
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12
+                    if previous_saving >= 0
+                    # loan
+                    else self.INFLATION / 12,
                     12,
                     0,
                     previous_saving
-                ) - self.fv(
-                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
+                )
+                income_with_interest = - self.fv(
+                    # income
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12
+                    if currnet_row['income_total'] > currnet_row['expense_total']
+                    # loan
+                    else self.INFLATION / 12,
                     12,
                     currnet_row['income_total'] + currnet_row['expense_total']
+                )
+                current_saving_fv = previous_saving_with_interest + income_with_interest
+                current_saving = -self.pv(
+                    self.INFLATION,
+                    1,
+                    0,
+                    current_saving_fv
                 )
                 previous_saving = current_saving
                 return current_saving
@@ -379,35 +400,20 @@ class Retirement(TimeValue):
 
         del df_timeframe, df_expense, df_income, time_scale
 
-
         self.cal__saving(df)
 
         return df
 
 
 if __name__ == '__main__':
+    from .utils import df2excel
+
     plan = Retirement()
     retirement_df = plan.build_data(
-        detail=False
+        detail=True
     )
-    # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter(
-        f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
-        engine='xlsxwriter'
+    df2excel(
+        df=retirement_df,
+        file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
+        num_format_column='F:R'
     )
-    retirement_df.to_excel(
-        writer,
-        index=False,
-    )
-    # set columns format
-    workbook = writer.book
-    worksheet = writer.sheets['Sheet1']
-    format1 = workbook.add_format({'num_format': '#,##0'})
-    worksheet.set_column('F:R', None, format1)
-    # set column width
-    for column in retirement_df:
-        column_length = max(retirement_df[column].astype(str).map(len).max(), len(column))
-        col_idx = retirement_df.columns.get_loc(column)
-        writer.sheets['Sheet1'].set_column(col_idx, col_idx, column_length + 1)
-    # close and save file
-    writer.save()
