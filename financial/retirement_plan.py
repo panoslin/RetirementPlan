@@ -296,7 +296,7 @@ class Retirement(TimeValue):
         df_income['income_total'] = df_income.iloc[:, 1:].sum(axis=1)
         return df_income
 
-    def cal__saving(self, df):
+    def cal__saving(self, df: pd.DataFrame, detail):
         """
         Calculte cummulative saving
         """
@@ -370,6 +370,9 @@ class Retirement(TimeValue):
             axis=1
         )
 
+        if not detail:
+            df.drop(columns='income_portfolio_annually', axis=1, inplace=True)
+
     @staticmethod
     def cal__financial_independence(df):
         df['financial_independence'] = df.apply(
@@ -409,7 +412,7 @@ class Retirement(TimeValue):
 
         del df_timeframe, df_expense, df_income, time_scale
 
-        self.cal__saving(df)
+        self.cal__saving(df, detail)
 
         detail and self.cal__financial_independence(df)
 
@@ -501,13 +504,13 @@ if __name__ == '__main__':
         env.expense_wedding,
         env.expense_car,
     )
-    # retirement_df = plan.build_data(
-    #     detail=False
-    # )
-    # df2excel(
-    #     df=retirement_df,
-    #     file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
-    #     num_format_column='F:ZZ'
-    # )
+    retirement_df = plan.build_data(
+        detail=False
+    )
+    df2excel(
+        df=retirement_df,
+        file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
+        num_format_column='F:ZZ'
+    )
 
-    print(plan.optimize())
+    # print(plan.optimize())
