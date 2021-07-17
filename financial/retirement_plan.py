@@ -25,6 +25,8 @@ from .utils import (
 )
 import pandas as pd
 import datetime
+import numpy as np
+from scipy import optimize
 
 
 class Retirement(TimeValue):
@@ -65,9 +67,9 @@ class Retirement(TimeValue):
 
         ## RATE
         self.INFLATION = 0.05
-        self.RATE_YEARLY_GROWTH_SALARY = 0.15
+        self.RATE_YEARLY_GROWTH_SALARY = 0.1716
         # including yield from money market, stock market, insurances and etc.
-        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.15
+        self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.1716
         self.RATE_HOUSING_LOAD = 0.07
         self.RATE_CAR_LOAD = 0.07
         self.RATE_ESCALATION_LIVING = 0.05
@@ -127,6 +129,8 @@ class Retirement(TimeValue):
         self.saving = self.money_value(__saving)
         self.income_monthly_spouse = self.money_value(__income_monthly_spouse)
         self.max_income_monthly = self.money_value(__max_income_monthly)
+
+        self.last_saving = None
 
     def money_value(self, amount):
         """
@@ -278,13 +282,13 @@ class Retirement(TimeValue):
                     year=year,
                     rate=self.RATE_YEARLY_GROWTH_SALARY,
                     amount=-self.income_monthly,
-                    maximum=-self.max_income_monthly,
+                    maximum=abs(self.max_income_monthly),
                 ) if self.date_of_work.year <= year < self.date_of_birth.year + self.age_of_retirement else 0,
                 "income_spouse": self.cal__growth_flow(
                     year=year,
                     rate=self.RATE_YEARLY_GROWTH_SALARY,
                     amount=-self.income_monthly_spouse,
-                    maximum=-self.max_income_monthly,
+                    maximum=abs(self.max_income_monthly),
                 ) if self.date_of_work_spouse.year <= year < self.date_of_birth_spouse.year + self.age_of_retirement else 0,
             }
             for year in time_scale
@@ -406,13 +410,56 @@ class Retirement(TimeValue):
         del df_timeframe, df_expense, df_income, time_scale
 
         self.cal__saving(df)
-        self.cal__financial_independence(df)
+
+        detail and self.cal__financial_independence(df)
 
         return df
 
-    def regression(self):
-        # todo
-        pass
+    def optimize(self):
+        """
+        https://stackoverflow.com/a/52839257/11169132
+        https://blog.csdn.net/qq_40707407/article/details/81709122
+
+        Constraints:
+
+            1. saving >= 0
+            2. min(last saving)
+            3. RATE_YEARLY_GROWTH_SALARY >= self.INFLATION
+            4. RATE_YEARLY_GROWTH_PORTFOLIO >= self.INFLATION
+            # 5. 0 <= max_income_monthly <= current income
+
+        :return:
+        """
+
+        def constraints(xk):
+            rate = xk[0]
+            if not 0 <= rate <= 0.3:
+                return -1
+            self.RATE_YEARLY_GROWTH_SALARY = self.RATE_YEARLY_GROWTH_PORTFOLIO = rate
+            df = self.build_data(detail=False)
+            last_saving = df.loc[df['year'] == self.date_of_death.year, 'saving']
+            self.last_saving = last_saving
+            return self.last_saving
+
+        # noinspection PyTypeChecker
+        res = optimize.minimize(
+            lambda _: self.last_saving,
+            x0=np.array([self.INFLATION]),
+            method='COBYLA',
+            options={
+                'rhobeg': 0.001,
+                'maxiter': 2000,
+            },
+            constraints=(
+                # `eq` constraint means that the constraint function result is to be zero
+                # `ineq` means that it is to be non-negative
+                {
+                    'type': 'ineq',
+                    'fun': constraints
+                },
+            ),
+        )
+        return res
 
 
 if __name__ == '__main__':
@@ -452,11 +499,13 @@ if __name__ == '__main__':
         env.expense_wedding,
         env.expense_car,
     )
-    retirement_df = plan.build_data(
-        detail=True
-    )
-    df2excel(
-        df=retirement_df,
-        file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
-        num_format_column='F:ZZ'
-    )
+    # retirement_df = plan.build_data(
+    #     detail=False
+    # )
+    # df2excel(
+    #     df=retirement_df,
+    #     file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
+    #     num_format_column='F:ZZ'
+    # )
+
+    print(plan.optimize())
