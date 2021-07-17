@@ -433,8 +433,6 @@ class Retirement(TimeValue):
 
         def constraints(xk):
             rate = xk[0]
-            if not 0 <= rate <= 0.3:
-                return -1
             self.RATE_YEARLY_GROWTH_SALARY = self.RATE_YEARLY_GROWTH_PORTFOLIO = rate
             df = self.build_data(detail=False)
             last_saving = df.loc[df['year'] == self.date_of_death.year, 'saving']
@@ -447,16 +445,20 @@ class Retirement(TimeValue):
             x0=np.array([self.INFLATION]),
             method='COBYLA',
             options={
-                'rhobeg': 0.001,
-                'maxiter': 2000,
+                # initial step to change that variables
+                'rhobeg': 0.05,
+                'maxiter': 200,
+                # Tolerance (absolute) for constraint violations
+                'catol': 0.2,
+                # Final accuracy in the optimization
+                'tol': 0.0001,
             },
             constraints=(
                 # `eq` constraint means that the constraint function result is to be zero
                 # `ineq` means that it is to be non-negative
-                {
-                    'type': 'ineq',
-                    'fun': constraints
-                },
+                {'type': 'ineq', 'fun': constraints},
+                {'type': 'ineq', 'fun': lambda x: x[0] - self.INFLATION},
+                {'type': 'ineq', 'fun': lambda x: 0.3 - x[0]},
             ),
         )
         return res
