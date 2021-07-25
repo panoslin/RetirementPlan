@@ -324,7 +324,7 @@ class Retirement(TimeValue):
                     currnet_row['income_total'] + currnet_row['expense_total']
                 )
                 current_saving = previous_saving_with_interest + income_with_interest
-                income_portfolio = previous_saving_with_interest - previous_saving
+                income_portfolio = previous_saving_with_interest - currnet_row['saving']
                 previous_saving = current_saving
                 return income_portfolio, current_saving
             else:
@@ -422,6 +422,7 @@ class Retirement(TimeValue):
         """
         https://stackoverflow.com/a/52839257/11169132
         https://blog.csdn.net/qq_40707407/article/details/81709122
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
 
         Constraints:
 
@@ -448,13 +449,14 @@ class Retirement(TimeValue):
             x0=np.array([self.INFLATION]),
             method='COBYLA',
             options={
+                # https://docs.scipy.org/doc/scipy/reference/optimize.minimize-cobyla.html#minimize-method-cobyla
                 # initial step to change that variables
                 'rhobeg': 0.05,
                 'maxiter': 200,
                 # Tolerance (absolute) for constraint violations
                 'catol': 0.2,
                 # Final accuracy in the optimization
-                'tol': 0.0001,
+                'tol': 0.0000001,
             },
             constraints=(
                 # `eq` constraint means that the constraint function result is to be zero
@@ -465,6 +467,15 @@ class Retirement(TimeValue):
             ),
         )
         return res
+
+    def build__report(self):
+        """
+
+        :return:
+        """
+        # todo
+        # df = self.build_data(detail=True)
+        pass
 
 
 if __name__ == '__main__':
@@ -504,13 +515,16 @@ if __name__ == '__main__':
         env.expense_wedding,
         env.expense_car,
     )
+
+
+    # otires = plan.optimize()
+    # print(otires)
+    # plan.RATE_YEARLY_GROWTH_PORTFOLIO = plan.RATE_YEARLY_GROWTH_SALARY = otires.x[0]
     retirement_df = plan.build_data(
-        detail=False
+        detail=True
     )
     df2excel(
         df=retirement_df,
         file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
         num_format_column='F:ZZ'
     )
-
-    # print(plan.optimize())
