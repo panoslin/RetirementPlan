@@ -27,6 +27,7 @@ import pandas as pd
 import datetime
 import numpy as np
 from scipy import optimize
+from typing import Callable
 
 
 class Retirement(TimeValue):
@@ -468,14 +469,117 @@ class Retirement(TimeValue):
         )
         return res
 
-    def build__report(self):
-        """
+    def build__input_df(self):
+        # noinspection PyTypeChecker
+        attributes = pd.DataFrame(
+            [
+                {
+                    attr: getattr(self, attr)
+                    for attr in dir(self)
+                    if not isinstance(getattr(self, attr), Callable)
+                       and not attr.startswith('__')
+                       and not attr in {
+                    'last_saving'
+                }
+                }
+            ]
+        )
+        attributes = attributes.transpose().reset_index()
+        return attributes
 
-        :return:
+    @staticmethod
+    def set__column_width(df, writer, sheet):
+        for column in df:
+            column_length = max(
+                df[column].astype(str).map(len).max(),
+                len(column)
+                if isinstance(column, str)
+                else 0
+            )
+            col_idx = df.columns.get_loc(column)
+            writer.sheets[sheet].set_column(col_idx, col_idx, column_length + 1)
+
+    @staticmethod
+    def set__column_format(
+            writer,
+            sheet,
+            num_format,
+            columns='F:ZZ',
+
+    ):
+        worksheet = writer.sheets[sheet]
+        worksheet.set_column(columns, None, num_format)
+
+    def build__report(
+            self,
+            report_name=Path(__file__).parents[1].joinpath(
+                f'retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}-report.xlsx'
+            ).absolute(),
+    ):
         """
-        # todo
-        # df = self.build_data(detail=True)
-        pass
+        write excel sheets of:
+
+        1. attribute
+        2. balance sheet
+        3. expense cashflow
+        3. income cashflow
+
+        """
+        # Create a Pandas Excel writer using XlsxWriter as the engine.
+        writer = pd.ExcelWriter(
+            report_name,
+            engine='xlsxwriter'
+        )
+
+        # build DataFrames
+        df_attrs = self.build__input_df()
+        time_scale = range(self.date_of_work.year, self.date_of_death.year + 1)
+        df_timeframe = self.build__df_time_frame(time_scale)
+        df_expense = self.build__df_expense(time_scale)
+        df_income = self.build__df_income(time_scale)
+        df_expense = df_timeframe.merge(df_expense, on='year')
+        df_income = df_timeframe.merge(df_income, on='year')
+        df = self.build_data(detail=False)
+
+        # write DataFrames to excel sheets
+        df_attrs.to_excel(
+            writer,
+            sheet_name='Attributes',
+            index=False,
+            header=False
+        )
+        df_expense.to_excel(
+            writer,
+            sheet_name='Expense Cash Flow',
+            index=False,
+        )
+        df_income.to_excel(
+            writer,
+            sheet_name='Income Cash Flow',
+            index=False,
+        )
+        df.to_excel(
+            writer,
+            sheet_name='Balance Sheet',
+            index=False,
+        )
+
+        # set columns format
+        workbook = writer.book
+        num_format = workbook.add_format({'num_format': '#,##0.00', })
+        self.set__column_format(writer, 'Attributes', num_format, "A:B")
+        self.set__column_format(writer, 'Expense Cash Flow', num_format)
+        self.set__column_format(writer, 'Income Cash Flow', num_format)
+        self.set__column_format(writer, 'Balance Sheet', num_format)
+
+        # set column width
+        self.set__column_width(df_attrs, writer, 'Attributes')
+        self.set__column_width(df_expense, writer, 'Expense Cash Flow')
+        self.set__column_width(df_income, writer, 'Income Cash Flow')
+        self.set__column_width(df, writer, 'Balance Sheet')
+
+        # close and save file
+        writer.save()
 
 
 if __name__ == '__main__':
@@ -516,15 +620,17 @@ if __name__ == '__main__':
         env.expense_car,
     )
 
+    otires = plan.optimize()
+    print(otires)
+    plan.RATE_YEARLY_GROWTH_PORTFOLIO = plan.RATE_YEARLY_GROWTH_SALARY = otires.x[0]
+    # retirement_df = plan.build_data(
+    #     detail=True
+    # )
+    # df2excel(
+    #     df=retirement_df,
+    #     file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
+    #     num_format_column='F:ZZ'
+    # )
+    plan.build__report(
 
-    # otires = plan.optimize()
-    # print(otires)
-    # plan.RATE_YEARLY_GROWTH_PORTFOLIO = plan.RATE_YEARLY_GROWTH_SALARY = otires.x[0]
-    retirement_df = plan.build_data(
-        detail=True
-    )
-    df2excel(
-        df=retirement_df,
-        file_name=f'../retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}.xlsx',
-        num_format_column='F:ZZ'
     )
