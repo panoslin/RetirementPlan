@@ -6,15 +6,18 @@ import datetime
 import time
 import pandas as pd
 from pathlib import Path
+from typing import Union
 
-str2datetime = lambda x: datetime.datetime.fromtimestamp(
-    time.mktime(
-        time.strptime(
-            x,
-            '%Y/%m/%d'
+
+def str2datetime(x: Union[str, datetime.date, datetime.datetime]):
+    return datetime.datetime.fromtimestamp(
+        time.mktime(
+            time.strptime(
+                x,
+                '%Y/%m/%d'
+            )
         )
-    )
-)
+    ) if isinstance(x, str) else x
 
 
 def df2excel(
