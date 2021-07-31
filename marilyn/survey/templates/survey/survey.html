@@ -1,0 +1,95 @@
+<form id="survey-form" method="post">
+{#    <div>#}
+{#        <label class="title-label" for="name" id="name name-label">Name</label>#}
+{#        <input type="text" placeholder="Enter Your Name" required>#}
+{#    </div>#}
+{#    <div>#}
+{#        <label class="title-label" for="email" id="email email-label">Email</label>#}
+{#        <input type="text" placeholder="Enter Your Email" required>#}
+{#    </div>#}
+{#    <div>#}
+{#        <label class="title-label" for="age" input="number" id="number number-label" min="10" max="99">Age#}
+{#            <label class="h-parenthasis">(optional)</label></label>#}
+{#        <input type="age" placeholder="Enter Your Age">#}
+{#    </div>#}
+{#    <div>#}
+{#        <p id="dropdown"> Which option best describes your current role?</p>#}
+{#        <select required>#}
+{#            <option disabled selected value>Select current role</option>#}
+{#            <option>Student</option>#}
+{#            <option>Full time job</option>#}
+{#            <option>Full time learner</option>#}
+{#            <option>Prefer not to say</option>#}
+{#            <option>Other</option>#}
+{#        </select>#}
+{#    </div>#}
+{#    <div>#}
+{#        <p>Would you recommend freeCodeCamp to a friend?</p>#}
+{#        <label for="">#}
+{#            <input type="radio" checked name="recommend" value="definitely">Definitely#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="radio" name="recommend" value="maybe">Maybe#}
+{#        </label>#}
+{#        <label>#}
+{#            <input type="radio" name="recommend" value="not sure">Not Sure#}
+{#        </label>#}
+{#    </div>#}
+{#    <div>#}
+{#        <p> What is you favorite freeCodeCamp feature?</p>#}
+{#        <select required>#}
+{#            <option disabled selected value>Select an option</option>#}
+{#            <option>Challenges</option>#}
+{#            <option>Projects</option>#}
+{#            <option>Community</option>#}
+{#            <option>Open source</option>#}
+{#        </select>#}
+{#    </div>#}
+{#    <div>#}
+{#        <p>What would you like to see improved?<label class="h-parenthasis"> (Check all that apply)</label></p>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Front-end Projects#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Back-end Projects#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Data Visualization#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Challenges#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Open Source Community#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Gitter Help Rooms#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Videos#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">City Meetups#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Wiki#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Forums#}
+{#        </label>#}
+{#        <label for="">#}
+{#            <input type="checkbox">Additional Courses#}
+{#        </label>#}
+{#    </div>#}
+{#    <div>#}
+{#        <p>Any comments or suggestions?</p>#}
+{#        <textarea rows="5" placeholder="Enter your comment here..."></textarea>#}
+{#    </div>#}
+
+
+    {% csrf_token %}
+    {% load crispy_forms_tags %}
+    {% crispy form %}
+{#    {{ form.as_p }}#}
+
+</form>

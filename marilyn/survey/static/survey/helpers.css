@@ -1,0 +1,11 @@
+.h-italic{
+    font-style: italic;
+}
+.h-heading-text{
+    font-size: 30px;
+}
+.h-parenthasis{
+    font-weight: lighter;
+    font-size: 15px;
+    display: inline;
+}
