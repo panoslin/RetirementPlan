@@ -5,9 +5,10 @@ WORKDIR /Project
 # 修复时区
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 # apt-get install
-RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list &&\
+RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list &&\
+    apt-get clean \
     apt-get update -y \
-    && apt-get install -y build-essential \
+    && apt-get install -y build-essential libreoffice \
     && rm -rf /var/lib/apt/lists/*
 # pip install
 ADD requirements.txt /Project/
