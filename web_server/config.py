@@ -18,7 +18,7 @@ threads = min(os.cpu_count(), 5)
 ## Daemonize the Gunicorn process.
 ## Detaches the server from the controlling terminal and enters the background.
 # daemon = True
-reload = True
+reload = False
 
 # worker_class = 'sanic.worker.GunicornWorker'
 

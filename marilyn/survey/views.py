@@ -66,5 +66,5 @@ def response__excel(excel):
             file.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        response['Content-Disposition'] = f'attachment; filename={excel}'
+        response['Content-Disposition'] = f'attachment; filename={os.path.basename(excel)}'
         return response
