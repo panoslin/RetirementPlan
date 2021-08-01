@@ -1,0 +1,32 @@
+# from the root directory run command:
+# docker stack deploy -c docker/docker-compose.yml finance
+version: '3.7'
+services:
+  web:
+    image: panoslin/finance
+    networks:
+      webbet:
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: rollback
+        monitor: 10s
+        order: start-first
+      restart_policy:
+        condition: any
+        delay: '10s'
+        window: '30s'
+    ports:
+      - 9635:8000
+    volumes:
+      - ..:/Project
+    command: [
+      'sh',
+      '-c',
+      'gunicorn -c web_server/config.py --pythonpath marilyn marilyn.wsgi'
+      ]
+
+networks:
+  webbet:

@@ -1,0 +1,31 @@
+body{
+    max-width: 1200px;
+    margin: auto;
+    flex-direction: column;
+    display: flex;
+    font-family: sans-serif;
+    font-size: 20px;
+}
+div{
+    display: flex;
+    flex-direction: column;
+    padding-top: 15px;
+}
+p, h1, label, option{
+    line-height: 25px;
+    margin-bottom: 10px;
+}
+p, h1, label{
+    color: white;
+}
+input, select, option{
+    padding: 10px;
+    border-radius: 7px;
+}
+
+
+
+
+
+
+
