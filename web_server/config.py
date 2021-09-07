@@ -5,16 +5,16 @@
 """
 gunicorn -c web_server/config.py marilyn.marilyn.wsgi:app
 """
-import os
+# import os
 
 bind = '0.0.0.0:8000'
 ## Gunicorn should only need 4-12 worker processes
 ## to handle hundreds or thousands of requests per second.
-workers = min(os.cpu_count(), 5)
+workers = 2
 ## The number of worker threads for handling requests.
 ## A positive integer generally in the 2-4 x $(NUM_CORES) range.
 ## You’ll want to vary this a bit to find the best for your particular application’s work load.
-threads = min(os.cpu_count(), 5)
+threads = 2
 ## Daemonize the Gunicorn process.
 ## Detaches the server from the controlling terminal and enters the background.
 # daemon = True
@@ -26,7 +26,7 @@ reload = False
 ## Any value greater than zero will limit the number of requests a work will process before automatically restarting.
 ## This is a simple method to help limit the damage of memory leaks.
 ## If this is set to zero (the default) then the automatic worker restarts are disabled.
-max_requests = 200
+# max_requests = 200
 
 ## Workers silent for more than this many seconds are killed and restarted.
 timeout = 30
