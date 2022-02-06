@@ -469,9 +469,9 @@ class Retirement(TimeValue):
         )
         return res
 
-    def build__input_df(self):
+    def build__assumptions_df(self):
         # noinspection PyTypeChecker
-        attributes = pd.DataFrame(
+        assumptions = pd.DataFrame(
             [
                 {
                     attr: getattr(self, attr)
@@ -484,8 +484,8 @@ class Retirement(TimeValue):
                 }
             ]
         )
-        attributes = attributes.transpose().reset_index()
-        return attributes
+        assumptions = assumptions.transpose().reset_index()
+        return assumptions
 
     @staticmethod
     def set__column_width(df, writer, sheet):
@@ -532,7 +532,7 @@ class Retirement(TimeValue):
         )
 
         # build DataFrames
-        df_attrs = self.build__input_df()
+        df_attrs = self.build__assumptions_df()
         time_scale = range(self.date_of_work.year, self.date_of_death.year + 1)
         df_timeframe = self.build__df_time_frame(time_scale)
         df_expense = self.build__df_expense(time_scale)
@@ -544,7 +544,7 @@ class Retirement(TimeValue):
         # write DataFrames to excel sheets
         df_attrs.to_excel(
             writer,
-            sheet_name='Attributes',
+            sheet_name='Assumptions',
             index=False,
             header=False
         )
@@ -555,7 +555,7 @@ class Retirement(TimeValue):
         )
         df_income.to_excel(
             writer,
-            sheet_name='Income Cash Flow',
+            sheet_name='Income Statement',
             index=False,
         )
         df.to_excel(
@@ -567,15 +567,15 @@ class Retirement(TimeValue):
         # set columns format
         workbook = writer.book
         num_format = workbook.add_format({'num_format': '#,##0.00', })
-        self.set__column_format(writer, 'Attributes', num_format, "A:B")
+        self.set__column_format(writer, 'Assumptions', num_format, "A:B")
         self.set__column_format(writer, 'Expense Cash Flow', num_format)
-        self.set__column_format(writer, 'Income Cash Flow', num_format)
+        self.set__column_format(writer, 'Income Statement', num_format)
         self.set__column_format(writer, 'Balance Sheet', num_format)
 
         # set column width
-        self.set__column_width(df_attrs, writer, 'Attributes')
+        self.set__column_width(df_attrs, writer, 'Assumptions')
         self.set__column_width(df_expense, writer, 'Expense Cash Flow')
-        self.set__column_width(df_income, writer, 'Income Cash Flow')
+        self.set__column_width(df_income, writer, 'Income Statement')
         self.set__column_width(df, writer, 'Balance Sheet')
 
         # close and save file
