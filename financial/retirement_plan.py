@@ -272,6 +272,7 @@ class Retirement(TimeValue):
             for year in time_scale
         )
         self.cal__expense_nursing(df_expense)
+        # todo: include education and parent birthday -> additional expense
         df_expense['expense_total'] = df_expense.iloc[:, 1:].sum(axis=1)
         return df_expense
 
@@ -304,8 +305,17 @@ class Retirement(TimeValue):
         df['income_portfolio_annually'] = 0
         df['saving'] = 0
         # saving on money value date (the date filling in the data)
-        df.loc[df['year'] == self.date_of_money_value.year, 'saving'] = -self.saving
-        previous_saving = 0
+        if self.date_of_money_value.year >= self.date_of_work.year:
+            previous_saving = -self.saving
+        else:
+            previous_saving = self.fv(
+                self.RATE_YEARLY_GROWTH_PORTFOLIO
+                if self.saving >= 0
+                else self.INFLATION,
+                self.date_of_work.year - self.date_of_money_value.year - 1,
+                0,
+                self.saving
+            )
 
         def cal__saving(currnet_row):
             nonlocal previous_saving
@@ -314,18 +324,28 @@ class Retirement(TimeValue):
             elif currnet_row['year'] == self.date_of_money_value.year:
                 # current saving with interest + rest of the saving of the year with interest
                 previous_saving_with_interest = -self.fv(
-                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
+                    # income
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12
+                    if previous_saving >= 0
+                    # loan
+                    else self.INFLATION / 12,
+
                     12 - self.date_of_now.month,
                     0,
-                    currnet_row['saving']
+                    previous_saving
                 )
                 income_with_interest = - self.fv(
-                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12,
+                    # income
+                    self.RATE_YEARLY_GROWTH_PORTFOLIO / 12
+                    if currnet_row['income_total'] + currnet_row['expense_total'] >= 0
+                    # loan
+                    else self.INFLATION / 12,
+
                     12 - self.date_of_now.month,
                     currnet_row['income_total'] + currnet_row['expense_total']
                 )
                 current_saving = previous_saving_with_interest + income_with_interest
-                income_portfolio = previous_saving_with_interest - currnet_row['saving']
+                income_portfolio = previous_saving_with_interest - previous_saving
                 previous_saving = current_saving
                 return income_portfolio, current_saving
             else:
@@ -343,7 +363,7 @@ class Retirement(TimeValue):
                 income_with_interest = - self.fv(
                     # income
                     self.RATE_YEARLY_GROWTH_PORTFOLIO / 12
-                    if currnet_row['income_total'] > currnet_row['expense_total']
+                    if currnet_row['income_total'] + currnet_row['expense_total'] >= 0
                     # loan
                     else self.INFLATION / 12,
                     12,
@@ -515,6 +535,7 @@ class Retirement(TimeValue):
             report_name=Path(__file__).parents[1].joinpath(
                 f'retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}-report.xlsx'
             ).absolute(),
+            detail=False
     ):
         """
         write excel sheets of:
@@ -539,7 +560,7 @@ class Retirement(TimeValue):
         df_income = self.build__df_income(time_scale)
         df_expense = df_timeframe.merge(df_expense, on='year')
         df_income = df_timeframe.merge(df_income, on='year')
-        df = self.build_data(detail=False)
+        df = self.build_data(detail=detail)
 
         # write DataFrames to excel sheets
         df_attrs.to_excel(
@@ -632,5 +653,5 @@ if __name__ == '__main__':
     #     num_format_column='F:ZZ'
     # )
     plan.build__report(
-
+        detail=True
     )
