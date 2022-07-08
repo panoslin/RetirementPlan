@@ -267,7 +267,64 @@ class Retirement(TimeValue):
                 else 0,
                 "expense_pension": self.expense_monthly_pension_couple
                 if year >= self.date_of_birth.year + self.age_of_retirement
-                else 0
+                else 0,
+
+                "expense_giving_birth": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child,
+                    end_year=self.date_of_birth_child + 1,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=50000
+                ),
+                "expense_edu_kindergarden": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child + 4,
+                    end_year=self.date_of_birth_child + 4 + 3,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=60000
+                ),
+                "expense_edu_primary": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child + 6,
+                    end_year=self.date_of_birth_child + 6 + 6,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=120000
+                ),
+                "expense_edu_mid": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child + 12,
+                    end_year=self.date_of_birth_child + 12 + 3,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=120000
+                ),
+                "expense_edu_high": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child + 15,
+                    end_year=self.date_of_birth_child + 15 + 3,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=120000
+                ),
+                "expense_edu_bachelor": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child + 18,
+                    end_year=self.date_of_birth_child + 4,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=100000 * 4
+                ),
+                "expense_graduate_degree": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=2023,
+                    end_year=2023 + 2,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=500000
+                ),
             }
             for year in time_scale
         )
