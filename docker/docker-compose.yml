@@ -28,7 +28,6 @@ services:
       'gunicorn -c web_server/config.py
       --pythonpath marilyn
       --access-logfile -
-      --log-level debug
       marilyn.wsgi'
       ]
 
