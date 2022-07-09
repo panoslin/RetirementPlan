@@ -72,7 +72,7 @@ class Retirement(TimeValue):
         # including yield from money market, stock market, insurances and etc.
         self.RATE_YEARLY_GROWTH_PORTFOLIO = 0.1716
         self.RATE_HOUSING_LOAD = 0.07
-        self.RATE_CAR_LOAD = 0.07
+        self.RATE_CAR_LOAN = 0.07
         self.RATE_ESCALATION_LIVING = 0.05
 
         ## DATE
@@ -132,6 +132,7 @@ class Retirement(TimeValue):
         self.max_income_monthly = self.money_value(__max_income_monthly)
 
         self.last_saving = None
+        self.note = None
 
     def money_value(self, amount):
         """
@@ -227,12 +228,15 @@ class Retirement(TimeValue):
                     maximum=-self.max_expense_monthly_renting,
                     multiplier=3
                 )
-                if year - self.date_of_birth.year <= self.age_of_housing
+                if year - self.date_of_birth.year <= self.age_of_housing + 1
                 else 0,
                 "expense_recreation": self.cal__expense_couple(
                     year=year,
                     expense=self.expense_monthly_recreation,
                     maximum=-self.max_expense_monthly_recreation
+                ) * (
+                    # reduce half of the recreation in the year of weding
+                    0.5 if year == self.date_of_birth.year + self.age_of_wedding else 1
                 ),
                 "expense_wedding": -self.pmt_with_down_pmt(
                     year=year,
@@ -246,7 +250,7 @@ class Retirement(TimeValue):
                     year=year,
                     start_year=self.date_of_birth.year + self.age_of_car,
                     end_year=self.date_of_birth.year + self.age_of_car + self.loan_term_car,
-                    loan_rate=self.RATE_CAR_LOAD,
+                    loan_rate=self.RATE_CAR_LOAN,
                     down_pmt_percentage=self.percentage_first_pmt_car,
                     amount=self.expense_car
                 ),
@@ -271,65 +275,73 @@ class Retirement(TimeValue):
 
                 "expense_giving_birth": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=self.date_of_birth_child,
-                    end_year=self.date_of_birth_child + 1,
+                    start_year=self.date_of_birth_child.year,
+                    end_year=self.date_of_birth_child.year + 1,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=50000
+                    amount=-50000
+                ),
+
+                "expense_caring": -self.pmt_with_down_pmt(
+                    year=year,
+                    start_year=self.date_of_birth_child.year,
+                    end_year=self.date_of_birth_child.year + 1,
+                    loan_rate=0,
+                    down_pmt_percentage=0,
+                    amount=-500000
                 ),
                 "expense_edu_kindergarden": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=self.date_of_birth_child + 4,
-                    end_year=self.date_of_birth_child + 4 + 3,
+                    start_year=self.date_of_birth_child.year + 4,
+                    end_year=self.date_of_birth_child.year + 4 + 3,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=60000
+                    amount=-60000
                 ),
                 "expense_edu_primary": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=self.date_of_birth_child + 6,
-                    end_year=self.date_of_birth_child + 6 + 6,
+                    start_year=self.date_of_birth_child.year + 6,
+                    end_year=self.date_of_birth_child.year + 6 + 6,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=120000
+                    amount=-120000
                 ),
                 "expense_edu_mid": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=self.date_of_birth_child + 12,
-                    end_year=self.date_of_birth_child + 12 + 3,
+                    start_year=self.date_of_birth_child.year + 12,
+                    end_year=self.date_of_birth_child.year + 12 + 3,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=120000
+                    amount=-120000
                 ),
                 "expense_edu_high": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=self.date_of_birth_child + 15,
-                    end_year=self.date_of_birth_child + 15 + 3,
+                    start_year=self.date_of_birth_child.year + 15,
+                    end_year=self.date_of_birth_child.year + 15 + 3,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=120000
+                    amount=-120000
                 ),
                 "expense_edu_bachelor": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=self.date_of_birth_child + 18,
-                    end_year=self.date_of_birth_child + 4,
+                    start_year=self.date_of_birth_child.year + 18,
+                    end_year=self.date_of_birth_child.year + 18 + 4,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=100000 * 4
+                    amount=-100000 * 4
                 ),
                 "expense_graduate_degree": -self.pmt_with_down_pmt(
                     year=year,
-                    start_year=2023,
-                    end_year=2023 + 2,
+                    start_year=self.date_of_birth_child.year + 22,
+                    end_year=self.date_of_birth_child.year + 22 + 2,
                     loan_rate=0,
                     down_pmt_percentage=0,
-                    amount=500000
+                    amount=-500000
                 ),
             }
             for year in time_scale
         )
         self.cal__expense_nursing(df_expense)
-        # todo: include education and parent birthday -> additional expense
         df_expense['expense_total'] = df_expense.iloc[:, 1:].sum(axis=1)
         return df_expense
 
@@ -348,7 +360,11 @@ class Retirement(TimeValue):
                     rate=self.RATE_YEARLY_GROWTH_SALARY,
                     amount=-self.income_monthly_spouse,
                     maximum=abs(self.max_income_monthly),
-                ) if self.date_of_work_spouse.year <= year < self.date_of_birth_spouse.year + self.age_of_retirement else 0,
+                ) if (
+                        self.date_of_work_spouse.year <= year < self.date_of_birth_spouse.year + self.age_of_retirement
+                        # excluding the year when child birth
+                        and year != self.date_of_birth_child.year
+                ) else 0,
             }
             for year in time_scale
         )
@@ -530,9 +546,9 @@ class Retirement(TimeValue):
                 # https://docs.scipy.org/doc/scipy/reference/optimize.minimize-cobyla.html#minimize-method-cobyla
                 # initial step to change that variables
                 'rhobeg': 0.05,
-                'maxiter': 200,
+                'maxiter': 300,
                 # Tolerance (absolute) for constraint violations
-                'catol': 0.2,
+                'catol': 0.05,
                 # Final accuracy in the optimization
                 'tol': 0.0000001,
             },
@@ -541,7 +557,7 @@ class Retirement(TimeValue):
                 # `ineq` means that it is to be non-negative
                 {'type': 'ineq', 'fun': constraints},
                 {'type': 'ineq', 'fun': lambda x: x[0] - self.INFLATION},
-                {'type': 'ineq', 'fun': lambda x: 0.3 - x[0]},
+                {'type': 'ineq', 'fun': lambda x: 0.2 - x[0]},
             ),
         )
         return res
@@ -552,11 +568,11 @@ class Retirement(TimeValue):
             [
                 {
                     attr: getattr(self, attr)
-                    for attr in dir(self)
+                    for attr in sorted(dir(self))
                     if not isinstance(getattr(self, attr), Callable)
                        and not attr.startswith('__')
                        and not attr in {
-                    'last_saving'
+                    'last_saving',
                 }
                 }
             ]
@@ -590,8 +606,9 @@ class Retirement(TimeValue):
     def build__report(
             self,
             report_name=Path(__file__).parents[1].joinpath(
-                f'retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}-report.xlsx'
+                f'Retirement-{datetime.datetime.today().strftime("%Y-%m-%d-%H-%M-%S")}-report.xlsx'
             ).absolute(),
+            note='',
             detail=False
     ):
         """
@@ -608,7 +625,7 @@ class Retirement(TimeValue):
             report_name,
             engine='xlsxwriter'
         )
-
+        self.note = note
         # build DataFrames
         df_attrs = self.build__assumptions_df()
         time_scale = range(self.date_of_work.year, self.date_of_death.year + 1)
@@ -658,13 +675,14 @@ class Retirement(TimeValue):
 
         # close and save file
         writer.save()
+        print(f"Report wrote to {report_name}")
 
 
 if __name__ == '__main__':
     from .utils import df2excel
 
     # pass ur own data
-    import env
+    import env_202207 as env
 
     plan = Retirement(
         env.date_of_money_value,
@@ -700,6 +718,13 @@ if __name__ == '__main__':
 
     otires = plan.optimize()
     print(otires)
+    if not otires.success:
+        print(
+            '\nSorry, the algorithm cannot find a reasonable solution\n'
+            'Please lower the expense or higher the income'
+        )
+        exit()
+
     plan.RATE_YEARLY_GROWTH_PORTFOLIO = plan.RATE_YEARLY_GROWTH_SALARY = otires.x[0]
     # retirement_df = plan.build_data(
     #     detail=True
@@ -710,5 +735,7 @@ if __name__ == '__main__':
     #     num_format_column='F:ZZ'
     # )
     plan.build__report(
-        detail=True
+        detail=True,
+        note='working in the U.S. after 2 years of graduate studying. \n'
+             'pay attention to the max_income_monthly '
     )
