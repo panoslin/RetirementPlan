@@ -130,8 +130,10 @@ dmypy.json
 
 .idea/
 
-env.py
+env.py*
+env_*py*
 retirement-*.xlsx
 retirement-*.csv
 .temp_report_dir/
 ignore/
+locustfile.py
