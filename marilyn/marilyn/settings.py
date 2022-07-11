@@ -133,6 +133,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATIC_ROOT = BASE_DIR / "static"
 
+# https://docs.djangoproject.com/en/3.2/topics/logging/#examples
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -149,7 +150,6 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'INFO',
-            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
