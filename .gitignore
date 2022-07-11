@@ -137,3 +137,5 @@ retirement-*.csv
 .temp_report_dir/
 ignore/
 locustfile.py
+
+*.icloud

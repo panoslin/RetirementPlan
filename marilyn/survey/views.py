@@ -11,15 +11,16 @@ def index(request):
     if request.method == 'POST':
         form = FinancialPlanForm(request.POST)
         if form.is_valid():
-            return report(form)
+            return report(form, request)
         else:
-            return HttpResponse('invalid!')
+            context = {'message': "Please enter valid infomation!"}
+            return render(request, 'survey/alert.html', context)
 
     context = {'form': FinancialPlanForm()}
     return render(request, 'survey/index.html', context)
 
 
-def report(form):
+def report(form, request):
     plan = Retirement(
         datetime.datetime.now(),
         form.cleaned_data['date_of_birth'],
@@ -53,10 +54,14 @@ def report(form):
     )
     otires = plan.optimize()
     if not otires.success:
-        return HttpResponse(
-            'Sorry, the algorithm cannot find a reasonable solution\n'
-            'Please lower the expense or higher the income'
-        )
+        context = {
+            'message': (
+                f'Sorry, the algorithm cannot find a reasonable solution.\n'
+                f'The annual growth rate of your income and portfolio will be `{round(otires.x[0] * 100, 2)}%`\n'
+                f'Please lower the expense or higher the income'
+            )
+        }
+        return render(request, 'survey/alert.html', context)
     plan.RATE_YEARLY_GROWTH_PORTFOLIO = plan.RATE_YEARLY_GROWTH_SALARY = otires.x[0]
     temp_report_dir = '.temp_report_dir'
     os.makedirs(temp_report_dir, exist_ok=True)

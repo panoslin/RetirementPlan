@@ -1,0 +1,39 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Financial Survey</title>
+    <link rel="stylesheet" href="{% static 'survey/base.css' %}">
+    <link rel="stylesheet" href="{% static 'survey/helpers.css' %}">
+    <link rel="stylesheet" href="{% static 'survey/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'survey/modules.css' %}">
+
+    <link rel="stylesheet" href="{% static 'survey/bootstrap.min.css' %}" id="bootstrap-css">
+    <script src="{% static 'survey/bootstrap.min.js' %}"></script>
+    <script src="{% static 'survey/jquery.min.js' %}"></script>
+
+{#    <link rel="stylesheet" href="{% static 'survey/site.css' %}"/>#}
+{#    <link rel="stylesheet" href="{% static 'survey/font-awesome.min.css' %}">#}
+{#    <link rel="stylesheet" href="{% static 'survey/raleway.css' %}">#}
+{#    <link href="{% static 'fontawesome_free/css/all.min.css' %}" rel="stylesheet" type="text/css">#}
+{#    <script src="{% static 'fontawesome_free/js/all.min.js' %}"></script>#}
+
+</head>
+<body class="background">
+<div class="background-layer">
+    <section class="l__text-align-center">
+        <h1 class="h-heading-text" id="title">Family Financial Planning</h1>
+        <p class="h-italic" id="description">From Assumptions to Financial Statements</p>
+    </section>
+
+    <section class="l__form background-layer-dark">
+            <p> {{ message|linebreaks }} </p>
+    </section>
+
+</div>
+</body>
+</html>
