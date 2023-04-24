@@ -20,8 +20,8 @@ services:
         window: '30s'
     ports:
       - 9635:8000
-    volumes:
-      - ..:/Project
+#    volumes:
+#      - ..:/Project
     command: [
       'sh',
       '-c',

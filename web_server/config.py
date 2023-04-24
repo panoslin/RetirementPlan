@@ -7,7 +7,7 @@ gunicorn -c web_server/config.py marilyn.marilyn.wsgi:app
 """
 # import os
 
-bind = '0.0.0.0:8000'
+bind = '0.0.0.0:8080'
 ## Gunicorn should only need 4-12 worker processes
 ## to handle hundreds or thousands of requests per second.
 workers = 2

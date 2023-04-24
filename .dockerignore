@@ -1,8 +1,8 @@
-venv/
 .idea/
 .git/
+ignore/
+venv/
 env.py
 retirement-*.xlsx
-retirement-*.csv
+Retirement-*.xlsx
 .temp_report_dir/
-ignore/
