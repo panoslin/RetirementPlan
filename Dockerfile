@@ -1,4 +1,4 @@
-# docker build -f docker/Dockerfile -t panoslin/finance .
+# docker build -t panoslin/finance .
 FROM python:3.8
 
 # set timezone

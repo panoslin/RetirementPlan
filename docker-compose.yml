@@ -19,7 +19,7 @@ services:
         delay: '10s'
         window: '30s'
     ports:
-      - 9635:8000
+      - 8080:8080
 #    volumes:
 #      - ..:/Project
     command: [
