@@ -7,6 +7,10 @@ import os
 import datetime
 
 
+def wechat_verification(request):
+    return HttpResponse("1886406eec317beea4a4652f27700c53cbc49dfc")
+
+
 def index(request):
     if request.method == 'POST':
         form = FinancialPlanForm(request.POST)
