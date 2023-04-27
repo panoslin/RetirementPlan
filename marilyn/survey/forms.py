@@ -195,6 +195,6 @@ class FinancialPlanForm(forms.Form):
             'expense_monthly_pension_couple',
             
             Div(
-                Submit('submit', 'Generate Future Cashflow', css_class='btn-green'),
+                Submit('submit', 'Generate Financial Statements', css_class='btn-green'),
             )
         )

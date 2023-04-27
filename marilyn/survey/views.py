@@ -39,7 +39,7 @@ def report(form, request):
         form.cleaned_data['price_per_square'],
         form.cleaned_data['area'],
         form.cleaned_data['price_per_decoration'],
-        70,
+        form.cleaned_data['age_of_retirement'],
         20000,
         form.cleaned_data['age_of_retirement'],
         form.cleaned_data['expense_monthly_pension_couple'],

@@ -619,6 +619,7 @@ class Retirement(TimeValue):
         3. expense cashflow
         3. income cashflow
 
+        TODO: USE TEMP MODULE
         """
         # Create a Pandas Excel writer using XlsxWriter as the engine.
         writer = pd.ExcelWriter(
@@ -682,7 +683,7 @@ if __name__ == '__main__':
     from .utils import df2excel
 
     # pass ur own data
-    import env_202207 as env
+    import envs.env_202304 as env
 
     plan = Retirement(
         env.date_of_money_value,
@@ -735,7 +736,10 @@ if __name__ == '__main__':
     #     num_format_column='F:ZZ'
     # )
     plan.build__report(
-        detail=True,
-        note='working in the U.S. after 2 years of graduate studying. \n'
-             'pay attention to the max_income_monthly '
+        report_name=Path(__file__).parents[1].joinpath(
+            'reports',
+            f'Retirement-{datetime.datetime.today().strftime("%Y-%m-%d")}-report.xlsx'
+        ).absolute(),
+        detail=False,
+        note=''
     )
