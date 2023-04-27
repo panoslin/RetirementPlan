@@ -36,34 +36,44 @@ class FinancialPlanForm(forms.Form):
         required=False,
         widget=DateInput,
         label='5. The date start to make money',
+        help_text="Indicate the date you start to work/invest and gain sustainable profit"
     )
     date_of_work_spouse = forms.DateField(
         required=False,
         widget=DateInput,
         label='6. The date start to make money (spouse)',
+        help_text="Indicate the date your spouse start to work/invest and gain sustainable profit"
     )
 
     income_monthly = forms.IntegerField(
         required=True,
         initial=10000,
         label='7. Current salary (monthly)',
-        help_text='Expected salary if not work yet',
+        help_text='Expected salary if you start to work now',
     )
     income_monthly_spouse = forms.IntegerField(
         required=True,
         initial=10000,
         label='8. Current salary from spouse (monthly)',
-        help_text='Expected salary if not work yet',
+        help_text='Expected salary if your spouse start to work now',
     )
     max_income_monthly = forms.IntegerField(
         required=True,
         initial=50000,
-        label='9. Expected maximum monthly salary',
+        label='9. Expected max monthly salary',
+        help_text=(
+            "Estimate the ceiling of your career. <br>"
+            "i.e. for a software engineer aspire to be an Architect, enter the salary of an Architect"
+        )
     )
     saving = forms.IntegerField(
         required=True,
-        label='10. Current financial assets amount',
-        help_text='Including Cash, stocks, bonds, and bank deposits'
+        label='10. Current Net Assets',
+        help_text=(
+            'Total Assets - Total Liabilities. <br>'
+            'Assets including cash, stocks, bonds, gold, antique etc. <br>'
+            'Not including your car and home if in mortgage'
+        )
     )
 
     expense_monthly_food = forms.IntegerField(
@@ -74,7 +84,8 @@ class FinancialPlanForm(forms.Form):
     max_expense_monthly_food = forms.IntegerField(
         required=True,
         initial=10000,
-        label='12. Maximum Monthly expense on food',
+        label='12. Max Monthly expense on food',
+        help_text='Estimated amount if your expectation is met'
     )
     expense_monthly_renting = forms.IntegerField(
         required=True,
@@ -84,7 +95,8 @@ class FinancialPlanForm(forms.Form):
     max_expense_monthly_renting = forms.IntegerField(
         required=True,
         initial=15000,
-        label='14. Maximum Monthly expense on rent',
+        label='14. Max Monthly expense on rent',
+        help_text='Estimated amount if your expectation is met'
     )
     expense_monthly_recreation = forms.IntegerField(
         required=True,
@@ -94,7 +106,12 @@ class FinancialPlanForm(forms.Form):
     max_expense_monthly_recreation = forms.IntegerField(
         required=True,
         initial=20000,
-        label='16. Maximum Monthly expense on recreation',
+        label='16. Max Monthly expense on recreation',
+        help_text=(
+            'Estimated amount if your expectation is met. <br>'
+            'Including: X-box for male, makeups for female and travelling etc. <br>'
+            'Every other expenses that are not covered can go here '
+        )
     )
 
     age_of_wedding = forms.IntegerField(
@@ -106,13 +123,13 @@ class FinancialPlanForm(forms.Form):
     )
     expense_wedding = forms.IntegerField(
         required=True,
-        initial=500000,
+        initial=200000,
         label='18. Expense of wedding ceremony',
     )
     age_of_car = forms.IntegerField(
         required=True,
         initial=28,
-        label='19. Age of having a car',
+        label='19. Age of purchasing a car',
         min_value=18,
         max_value=100,
     )
@@ -130,17 +147,17 @@ class FinancialPlanForm(forms.Form):
     price_per_square = forms.IntegerField(
         required=True,
         initial=50000,
-        label='22. Price per squere meter',
+        label='22. Price per square meter',
     )
     price_per_decoration = forms.IntegerField(
         required=True,
         initial=10000,
-        label='23. Price per squere meter (decoration)',
+        label='23. Price per square meter (decoration)',
     )
     area = forms.IntegerField(
         required=True,
         initial=150,
-        label='24. Size of the house (square meter)',
+        label='24. Area of the house (square meter)',
     )
 
     age_of_retirement = forms.IntegerField(
@@ -151,10 +168,8 @@ class FinancialPlanForm(forms.Form):
     expense_monthly_pension_couple = forms.IntegerField(
         required=True,
         initial=20000,
-        label='26. Expected monthly expense after retirement (couple)',
+        label='26. Expected monthly expense after retirement for both you and your spouse',
     )
-    
-    
 
     def __init__(self, *args, **kwargs):
         super(FinancialPlanForm, self).__init__(*args, **kwargs)
@@ -174,14 +189,14 @@ class FinancialPlanForm(forms.Form):
             'income_monthly_spouse',
             'max_income_monthly',
             'saving',
-            
+
             'expense_monthly_food',
             'max_expense_monthly_food',
             'expense_monthly_renting',
             'max_expense_monthly_renting',
             'expense_monthly_recreation',
             'max_expense_monthly_recreation',
-            
+
             'age_of_wedding',
             'expense_wedding',
             'age_of_car',
@@ -190,10 +205,10 @@ class FinancialPlanForm(forms.Form):
             'price_per_square',
             'price_per_decoration',
             'area',
-            
+
             'age_of_retirement',
             'expense_monthly_pension_couple',
-            
+
             Div(
                 Submit('submit', 'Generate Financial Statements', css_class='btn-green'),
             )
