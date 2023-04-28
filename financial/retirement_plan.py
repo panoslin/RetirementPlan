@@ -13,11 +13,12 @@ max_income_monthly
 and csv file
 
 """
+import sys
 from pathlib import Path
 
-import sys
-
 __package__ = Path(__file__).parent.stem
+
+import xlsxwriter
 
 from .time_value_of_money import TimeValue
 from .utils import (
@@ -581,27 +582,13 @@ class Retirement(TimeValue):
         return assumptions
 
     @staticmethod
-    def set__column_width(df, writer, sheet):
-        for column in df:
-            column_length = max(
-                df[column].astype(str).map(len).max(),
-                len(column)
-                if isinstance(column, str)
-                else 0
-            )
-            col_idx = df.columns.get_loc(column)
-            writer.sheets[sheet].set_column(col_idx, col_idx, column_length + 1)
-
-    @staticmethod
     def set__column_format(
             writer,
             sheet,
-            num_format,
-            columns='F:ZZ',
-
+            cell_format,
+            columns='A:ZZ',
     ):
-        worksheet = writer.sheets[sheet]
-        worksheet.set_column(columns, None, num_format)
+        writer.sheets[sheet].set_column(columns, None, cell_format)
 
     def build__report(
             self,
@@ -637,42 +624,70 @@ class Retirement(TimeValue):
         df_income = df_timeframe.merge(df_income, on='year')
         df = self.build_data(detail=detail)
 
-        # write DataFrames to excel sheets
+        # write DataFrames to Excel sheets
         df_attrs.to_excel(
             writer,
             sheet_name='Assumptions',
             index=False,
-            header=False
+            header=False,
+            float_format="%.3f",
         )
         df_expense.to_excel(
             writer,
             sheet_name='Expense Cash Flow',
             index=False,
+            float_format="%.2f",
         )
         df_income.to_excel(
             writer,
             sheet_name='Income Statement',
             index=False,
+            float_format="%.2f",
         )
         df.to_excel(
             writer,
             sheet_name='Balance Sheet',
             index=False,
+            float_format="%.2f",
         )
 
+        workbook: xlsxwriter.workbook.Workbook = writer.book
+        # set header format
+        font_format = workbook.add_format({
+            'font_name': 'Arial',
+            'font_size': 16
+        })
+        for worksheet, df in zip(workbook.worksheets()[1:], [df_expense, df_income, df]):
+            # [4] write to the 0th (header) row **one cell at a time**, with columnname and format
+            for columnnum, columnname in enumerate(list(df.columns)):
+                worksheet.write(0, columnnum, columnname, font_format)
+
         # set columns format
-        workbook = writer.book
-        num_format = workbook.add_format({'num_format': '#,##0.00', })
-        self.set__column_format(writer, 'Assumptions', num_format, "A:B")
-        self.set__column_format(writer, 'Expense Cash Flow', num_format)
-        self.set__column_format(writer, 'Income Statement', num_format)
-        self.set__column_format(writer, 'Balance Sheet', num_format)
+        integer_format = workbook.add_format({
+            'num_format': '#,##0',
+            'font_name': 'Arial',
+            'font_size': 16
+        })
+        float_format = workbook.add_format({
+            'num_format': '#,##0.000',
+            'font_name': 'Arial',
+            'font_size': 16
+        })
+        # number format
+        self.set__column_format(writer, 'Assumptions', float_format, "A:B")
+        self.set__column_format(writer, 'Expense Cash Flow', integer_format, "F:ZZ")
+        self.set__column_format(writer, 'Income Statement', integer_format, "F:ZZ")
+        self.set__column_format(writer, 'Balance Sheet', integer_format, "F:ZZ")
+
+        # font format
+        self.set__column_format(writer, 'Assumptions', font_format, "A:B")
+        self.set__column_format(writer, 'Expense Cash Flow', font_format, "A:E")
+        self.set__column_format(writer, 'Income Statement', font_format, "A:E")
+        self.set__column_format(writer, 'Balance Sheet', font_format, "A:E")
 
         # set column width
-        self.set__column_width(df_attrs, writer, 'Assumptions')
-        self.set__column_width(df_expense, writer, 'Expense Cash Flow')
-        self.set__column_width(df_income, writer, 'Income Statement')
-        self.set__column_width(df, writer, 'Balance Sheet')
+        for worksheet in workbook.worksheets():
+            worksheet.autofit()
 
         # close and save file
         writer.save()
@@ -680,7 +695,6 @@ class Retirement(TimeValue):
 
 
 if __name__ == '__main__':
-    from .utils import df2excel
 
     # pass ur own data
     import envs.env_202304 as env
